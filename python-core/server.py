@@ -4,6 +4,7 @@ import base64
 import uuid
 from PIL import Image
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 import uvicorn
 
@@ -36,7 +37,6 @@ class EmbedResponse(BaseModel):
     psnr: float
     ssim: float
     bits_embedded: int
-    blocks_used: int
     job_id: str
 
 
@@ -54,7 +54,7 @@ def embed(req: EmbedRequest):
         raw = base64.b64decode(req.image_b64)
         img = Image.open(io.BytesIO(raw)).convert('RGB')
     except Exception as e:
-        raise HTTPException(400, f'Invalid image: {e}')
+        return JSONResponse(status_code=400, content={'error': f'Invalid image: {e}'})
 
     config = WatermarkConfig(
         alpha=req.alpha,
@@ -65,13 +65,13 @@ def embed(req: EmbedRequest):
     )
 
     watermark_bytes = req.watermark_text.encode('utf-8')
-    if len(watermark_bytes) > 7:
-        watermark_bytes = watermark_bytes[:7]
 
     try:
         result_img, metrics = embed_watermark(img, watermark_bytes, config)
+    except ValueError as e:
+        return JSONResponse(status_code=400, content={'error': str(e)})
     except Exception as e:
-        raise HTTPException(500, f'Embed failed: {e}')
+        return JSONResponse(status_code=500, content={'error': f'Embed failed: {e}'})
 
     buf = io.BytesIO()
     result_img.save(buf, format='PNG')
@@ -82,7 +82,6 @@ def embed(req: EmbedRequest):
         psnr=metrics['psnr'],
         ssim=metrics['ssim'],
         bits_embedded=metrics['bits_embedded'],
-        blocks_used=metrics['blocks_used'],
         job_id=uuid.uuid4().hex[:12],
     )
 
@@ -93,7 +92,7 @@ def extract(req: ExtractRequest):
         raw = base64.b64decode(req.image_b64)
         img = Image.open(io.BytesIO(raw)).convert('RGB')
     except Exception as e:
-        raise HTTPException(400, f'Invalid image: {e}')
+        return JSONResponse(status_code=400, content={'error': f'Invalid image: {e}'})
 
     config = WatermarkConfig(
         delta=req.delta,
@@ -105,7 +104,7 @@ def extract(req: ExtractRequest):
     try:
         extracted_bytes, ext_info = extract_watermark(img, config=config)
     except Exception as e:
-        raise HTTPException(500, f'Extract failed: {e}')
+        return JSONResponse(status_code=500, content={'error': f'Extract failed: {e}'})
 
     return ExtractResponse(
         watermark_text=extracted_bytes.decode('utf-8', errors='replace'),

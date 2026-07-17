@@ -2,42 +2,57 @@ import numpy as np
 from PIL import Image
 
 from .config import WatermarkConfig
-from .dwt import decompose_y_channel, get_full_coeffs, reconstruct_from_ll
+from .dwt import get_full_coeffs, reconstruct_from_ll
 from .dct import dct_blockwise, idct_blockwise
 from .svd_qim import embed_bits_in_blocks, extract_bits_from_blocks
 from .sync_pattern import generate_sync_pattern, correlate_sync, build_payload, SYNC_LEN
 from .bch_codec import encode as bch_encode, decode as bch_decode, bytes_to_bits, bits_to_bytes, DATA_LEN
 from .metrics import psnr, ssim
 
-DATA_BITS = 64
 
+def _calc_payload(data: bytes, config: WatermarkConfig, max_bits: int) -> np.ndarray:
+    sync = generate_sync_pattern(config.sync_seed) if config.sync_enabled else np.array([], dtype=np.int8)
+    avail = max_bits - len(sync)
+    if avail <= 0:
+        raise ValueError(f"Not enough capacity: need {len(sync)} for sync, only {max_bits} blocks")
 
-def _prepare_payload(watermark_data: bytes, config: WatermarkConfig) -> np.ndarray:
+    n_data = min(len(data) * 8, avail)
+    if n_data < 8:
+        raise ValueError(f"Not enough capacity: image too small ({avail} bits available)")
+
+    data = data[:max(1, n_data // 8)]
+    raw_bits = bytes_to_bits(data, n_data)
+
     if config.bch_enabled:
-        n_chunks = (len(watermark_data) * 8 + DATA_LEN - 1) // DATA_LEN
-        all_data_bits = bytes_to_bits(watermark_data, n_chunks * DATA_LEN)
-        payload_parts = []
+        chunk_data = DATA_LEN
+        chunk_total = DATA_LEN + 8
+        n_chunks = min((n_data + chunk_data - 1) // chunk_data, avail // chunk_total)
+        if n_chunks == 0:
+            raise ValueError("Not enough capacity for BCH encoding")
+        parts = []
         for i in range(n_chunks):
-            chunk = all_data_bits[i * DATA_LEN:(i + 1) * DATA_LEN]
-            payload_parts.append(bch_encode(chunk))
-        payload = np.concatenate(payload_parts)
+            start = i * chunk_data
+            end = min(start + chunk_data, n_data)
+            chunk = np.zeros(chunk_data, dtype=np.int8)
+            chunk[:end - start] = raw_bits[start:end]
+            parts.append(bch_encode(chunk))
+        payload = np.concatenate(parts)
     else:
-        payload = bytes_to_bits(watermark_data, DATA_BITS)
+        max_payload = min(n_data, avail)
+        payload = raw_bits[:max_payload]
 
     if config.sync_enabled:
-        sync = generate_sync_pattern(config.sync_seed)
         payload = build_payload(sync, payload)
 
     return payload
 
 
 def _extract_payload(all_bits: np.ndarray, config: WatermarkConfig) -> tuple:
+    sync = generate_sync_pattern(config.sync_seed)
     if config.sync_enabled:
-        sync = generate_sync_pattern(config.sync_seed)
         offset, corr = correlate_sync(all_bits, sync)
         if offset >= 0 and corr >= 0.5:
-            payload_start = offset + len(sync)
-            payload_bits = all_bits[payload_start:]
+            payload_bits = all_bits[offset + len(sync):]
         else:
             payload_bits = all_bits
     else:
@@ -45,107 +60,77 @@ def _extract_payload(all_bits: np.ndarray, config: WatermarkConfig) -> tuple:
         corr = 0.0
 
     if config.bch_enabled:
-        n_bch_chunks = len(payload_bits) // (DATA_LEN + 8)
-        if n_bch_chunks == 0:
-            n_bch_chunks = 1
         chunk_size = DATA_LEN + 8
-        decoded_parts = []
-        for i in range(n_bch_chunks):
-            chunk = payload_bits[i * chunk_size:(i + 1) * chunk_size]
-            if len(chunk) == chunk_size:
-                decoded_parts.append(bch_decode(chunk))
-        if decoded_parts:
-            payload_bits = np.concatenate(decoded_parts)
+        n = len(payload_bits) // chunk_size
+        if n > 0:
+            parts = []
+            for i in range(n):
+                chunk = payload_bits[i * chunk_size:(i + 1) * chunk_size]
+                if len(chunk) == chunk_size:
+                    parts.append(bch_decode(chunk))
+            payload_bits = np.concatenate(parts) if parts else payload_bits
 
-    payload_bits = payload_bits[:DATA_BITS]
-    raw = bits_to_bytes(payload_bits)
-    return raw, corr
+    payload_bits = payload_bits[:64]
+    return bits_to_bytes(payload_bits), corr
 
 
-def embed_watermark(
-    carrier: Image.Image,
-    watermark_data: bytes,
-    config: WatermarkConfig = None
-) -> tuple:
+def embed_watermark(carrier: Image.Image, watermark_data: bytes, config: WatermarkConfig = None) -> tuple:
     if config is None:
         config = WatermarkConfig()
 
     divisor = 8 * (2 ** config.level)
-    w, h = carrier.size
-    new_w = (w // divisor) * divisor
-    new_h = (h // divisor) * divisor
+    new_w = (carrier.size[0] // divisor) * divisor
+    new_h = (carrier.size[1] // divisor) * divisor
     if new_w < divisor or new_h < divisor:
-        raise ValueError(f"Image too small: need at least {divisor}x{divisor}")
-    carrier_resized = carrier.resize((new_w, new_h), Image.LANCZOS)
+        raise ValueError(f"Image too small: minimum {divisor}x{divisor} pixels for level={config.level}")
 
-    carrier_rgb = carrier_resized.convert('RGB')
+    carrier = carrier.resize((new_w, new_h), Image.LANCZOS)
+    carrier_rgb = carrier.convert('RGB')
     r, g, b = carrier_rgb.split()
-    r_arr = np.array(r, dtype=np.float64)
-    g_arr = np.array(g, dtype=np.float64)
-    b_arr = np.array(b, dtype=np.float64)
-    y_channel = r_arr * 0.299 + g_arr * 0.587 + b_arr * 0.114
+    r_arr, g_arr, b_arr = [np.array(x, dtype=np.float64) for x in (r, g, b)]
 
-    original_y = y_channel.copy()
-    full_coeffs = get_full_coeffs(y_channel, config.level)
-    ll = full_coeffs[0]
+    y = r_arr * 0.299 + g_arr * 0.587 + b_arr * 0.114
+    original_y = y.copy()
+    full = get_full_coeffs(y, config.level)
+    ll_full = full[0].copy()
 
-    dct_blocks, ll_shape = dct_blockwise(ll)
-    n_available = dct_blocks.shape[0]
+    blocks, ll_shape = dct_blockwise(full[0])
+    n_avail = blocks.shape[0]
+    payload = _calc_payload(watermark_data, config, n_avail)
 
-    payload = _prepare_payload(watermark_data, config)
-    n_bits = len(payload)
-    assert n_bits <= n_available, f"Need {n_bits} blocks, have {n_available}"
+    modified = embed_bits_in_blocks(blocks, payload, config.delta, len(payload))
+    ll_rebuilt = idct_blockwise(modified, ll_shape)
 
-    modified_dct = embed_bits_in_blocks(dct_blocks, payload, config.delta, len(payload))
-    modified_ll = idct_blockwise(modified_dct, ll_shape)
+    y_watermarked = reconstruct_from_ll(ll_rebuilt, full, config.level)
+    y_watermarked = np.clip(y_watermarked, 0, 255).astype(np.uint8)
 
-    watermarked_y = reconstruct_from_ll(modified_ll, full_coeffs, config.level)
-    watermarked_y = np.clip(watermarked_y, 0, 255).astype(np.uint8)
+    dy = y_watermarked.astype(np.float64) - original_y.astype(np.float64)
+    ro = np.clip(r_arr + dy, 0, 255).astype(np.uint8)
+    go = np.clip(g_arr + dy, 0, 255).astype(np.uint8)
+    bo = np.clip(b_arr + dy, 0, 255).astype(np.uint8)
 
-    diff = watermarked_y.astype(np.float64) - original_y.astype(np.float64)
-    r_out = np.clip(r_arr + diff, 0, 255).astype(np.uint8)
-    g_out = np.clip(g_arr + diff, 0, 255).astype(np.uint8)
-    b_out = np.clip(b_arr + diff, 0, 255).astype(np.uint8)
+    result = Image.fromarray(np.stack([ro, go, bo], axis=2), 'RGB')
+    p = round(psnr(np.array(carrier_rgb), np.array(result)), 2)
+    s = round(ssim(np.array(r, dtype=np.float64), ro.astype(np.float64)), 4)
 
-    result = Image.fromarray(np.stack([r_out, g_out, b_out], axis=2), 'RGB')
-    psnr_val = round(psnr(np.array(carrier_rgb), np.array(result)), 2)
-    ssim_val = round(ssim(np.array(r, dtype=np.float64), r_out.astype(np.float64)), 4)
-
-    if carrier.size != (new_w, new_h):
-        result = result.resize(carrier.size, Image.LANCZOS)
-
-    return result, {
-        'psnr': psnr_val,
-        'ssim': ssim_val,
-        'bits_embedded': n_bits,
-        'blocks_used': n_bits,
-    }
+    return result, {'psnr': p, 'ssim': s, 'bits_embedded': len(payload)}
 
 
-def extract_watermark(
-    stego: Image.Image,
-    config: WatermarkConfig = None
-) -> tuple:
+def extract_watermark(stego: Image.Image, config: WatermarkConfig = None) -> tuple:
     if config is None:
         config = WatermarkConfig()
 
     divisor = 8 * (2 ** config.level)
-    w, h = stego.size
-    new_w = (w // divisor) * divisor
-    new_h = (h // divisor) * divisor
-    stego = stego.resize((new_w, new_h), Image.LANCZOS)
+    new_w = (stego.size[0] // divisor) * divisor
+    new_h = (stego.size[1] // divisor) * divisor
+    stego = stego.resize((new_w, new_h), Image.LANCZOS).convert('RGB')
+    r, g, b = stego.split()
+    y = np.array(r, dtype=np.float64) * 0.299 + np.array(g, dtype=np.float64) * 0.587 + np.array(b, dtype=np.float64) * 0.114
 
-    stego_rgb = stego.convert('RGB')
-    r, g, b = stego_rgb.split()
-    y_channel = np.array(r, dtype=np.float64) * 0.299 + np.array(g, dtype=np.float64) * 0.587 + np.array(b, dtype=np.float64) * 0.114
-
-    full_coeffs = get_full_coeffs(y_channel, config.level)
-    ll = full_coeffs[0]
-    dct_blocks, _ = dct_blockwise(ll)
-    n_available = dct_blocks.shape[0]
-
-    max_bits = min(n_available, DATA_BITS + 128)
-    all_bits = extract_bits_from_blocks(dct_blocks, config.delta, max_bits)
+    full = get_full_coeffs(y, config.level)
+    blocks, _ = dct_blockwise(full[0])
+    n_bits = min(blocks.shape[0], 256)
+    all_bits = extract_bits_from_blocks(blocks, config.delta, n_bits)
 
     raw, corr = _extract_payload(all_bits, config)
     return raw, {'sync_corr': round(float(corr), 4)}
