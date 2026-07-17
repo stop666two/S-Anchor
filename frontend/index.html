@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S-ANCHOR :: FREQUENCY DOMAIN WATERMARK SYSTEM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;600&family=IBM+Plex+Mono&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0A0A0A;
+  --bg-secondary: #121212;
+  --bg-tertiary: #1A1A1A;
+  --fg-primary: #EAEAEA;
+  --fg-secondary: #888888;
+  --accent-red: #E61919;
+  --terminal-green: #4AF626;
+  --border: #333333;
+  --border-accent: #E61919;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--fg-primary);
+  font-family: 'JetBrains Mono', monospace;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border); }
+
+/* === TOP STATUS BAR === */
+.status-bar {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 20px;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  gap: 24px;
+  flex-shrink: 0;
+}
+.status-bar .indicator { display: flex; align-items: center; gap: 6px; }
+.status-bar .dot { width: 8px; height: 8px; border-radius: 0; display: inline-block; }
+.status-bar .dot.green { background: var(--terminal-green); }
+.status-bar .dot.red { background: var(--accent-red); }
+.status-bar .sep { color: var(--border); }
+.status-bar .mode-btn {
+  background: none; border: 1px solid var(--border); color: var(--fg-secondary);
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase;
+  padding: 4px 10px; cursor: pointer; letter-spacing: 0.1em; transition: all 0.2s;
+  border-radius: 0;
+}
+.status-bar .mode-btn.active { border-color: var(--accent-red); color: var(--fg-primary); background: rgba(230,25,25,0.1); }
+.status-bar .mode-btn:hover { border-color: var(--accent-red); }
+
+/* === MAIN CONTENT === */
+.main-content {
+  display: grid;
+  grid-template-columns: 1.2fr 1.2fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  flex: 1;
+  min-height: 0;
+}
+.main-content > div {
+  background: var(--bg-secondary);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* === PANEL HEADER === */
+.panel-header {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-secondary);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  flex-shrink: 0;
+}
+
+/* === UPLOAD ZONE === */
+.upload-zone { flex: 1; display: flex; flex-direction: column; padding: 12px; gap: 8px; }
+.drop-area {
+  flex: 1;
+  border: 2px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 140px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 0;
+}
+.drop-area.dragover { border-color: var(--accent-red); background: rgba(230,25,25,0.05); }
+.drop-area .icon { font-size: 24px; opacity: 0.3; margin-bottom: 8px; }
+.drop-area .hint { font-size: 10px; color: var(--fg-secondary); letter-spacing: 0.05em; }
+.drop-area .hint strong { color: var(--fg-primary); }
+.drop-area img, .drop-area canvas {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  object-fit: contain;
+}
+.drop-area input[type=file] { display: none; }
+.file-info { font-size: 10px; color: var(--fg-secondary); letter-spacing: 0.03em; flex-shrink: 0; }
+
+/* === PARAMETER PANEL === */
+.param-panel { padding: 14px; display: flex; flex-direction: column; gap: 10px; flex: 1; overflow-y: auto; }
+.param-group { border: 1px solid var(--border); padding: 10px 12px; border-radius: 0; }
+.param-group .label { font-size: 9px; color: var(--fg-secondary); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+.param-group .value { font-family: 'VT323', monospace; font-size: 18px; color: var(--fg-primary); }
+.slider-row { display: flex; align-items: center; gap: 10px; }
+.slider-row input[type=range] {
+  flex: 1; -webkit-appearance: none; appearance: none; height: 2px;
+  background: var(--border); outline: none; border-radius: 0;
+}
+.slider-row input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 12px; height: 12px; background: var(--accent-red);
+  cursor: pointer; border: none; border-radius: 0;
+}
+.toggle-row { display: flex; align-items: center; gap: 8px; }
+.toggle-row .toggle-btn {
+  background: none; border: 1px solid var(--border); color: var(--fg-secondary);
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 3px 10px;
+  cursor: pointer; letter-spacing: 0.05em; transition: all 0.2s; border-radius: 0;
+}
+.toggle-row .toggle-btn.active { border-color: var(--accent-red); color: var(--fg-primary); background: rgba(230,25,25,0.1); }
+.btn-exec {
+  width: 100%; padding: 14px; background: transparent; border: 2px solid var(--accent-red);
+  color: var(--fg-primary); font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer;
+  transition: all 0.2s; border-radius: 0; margin-top: auto;
+}
+.btn-exec:hover { background: var(--accent-red); color: var(--bg-primary); }
+.btn-exec:active { transform: scale(0.98); }
+.btn-exec:disabled { opacity: 0.3; cursor: not-allowed; border-color: var(--border); }
+.btn-exec:disabled:hover { background: transparent; color: var(--fg-primary); }
+
+/* === COMPARISON VIEWPORT === */
+.comparison-view { flex: 1; display: flex; flex-direction: column; position: relative; }
+.compare-container { flex: 1; position: relative; overflow: hidden; cursor: ew-resize; }
+.compare-container .cmp-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; }
+.compare-container .cmp-top {
+  clip-path: polygon(0 0, var(--slider-pos,50%) 0, var(--slider-pos,50%) 100%, 0 100%);
+}
+.compare-container .cmp-divider {
+  position: absolute; top: 0; left: 50%; width: 2px; height: 100%;
+  background: var(--accent-red); transform: translateX(-50%); pointer-events: none;
+  z-index: 10;
+}
+.compare-container .cmp-handle {
+  position: absolute; top: 50%; left: 50%; width: 28px; height: 28px;
+  background: var(--accent-red); transform: translate(-50%,-50%); pointer-events: none;
+  z-index: 11; display: flex; align-items: center; justify-content: center;
+  color: var(--bg-primary); font-size: 12px;
+}
+.metrics-row {
+  display: flex; gap: 1px; background: var(--border); flex-shrink: 0;
+}
+.metrics-row > div {
+  flex: 1; background: var(--bg-tertiary); padding: 8px 12px; text-align: center;
+}
+.metrics-row .metric-label { font-size: 8px; color: var(--fg-secondary); letter-spacing: 0.1em; text-transform: uppercase; }
+.metrics-row .metric-value { font-family: 'VT323', monospace; font-size: 22px; color: var(--terminal-green); }
+
+/* === TERMINAL LOG === */
+.terminal-log {
+  height: 120px; background: var(--bg-primary); border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; flex-shrink: 0;
+}
+.terminal-log .log-header {
+  font-size: 9px; letter-spacing: 0.1em; color: var(--fg-secondary);
+  padding: 6px 14px; border-bottom: 1px solid var(--border); text-transform: uppercase;
+  background: var(--bg-tertiary); flex-shrink: 0;
+}
+.terminal-log .log-body {
+  flex: 1; overflow-y: auto; padding: 6px 14px; font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; line-height: 1.6;
+}
+.terminal-log .log-body .line { color: var(--fg-secondary); white-space: pre-wrap; }
+.terminal-log .log-body .line.info { color: var(--fg-primary); }
+.terminal-log .log-body .line.ok { color: var(--terminal-green); }
+.terminal-log .log-body .line.err { color: var(--accent-red); }
+.terminal-log .log-body .line .ts { color: var(--border); }
+
+/* === EXTRACT RESULT === */
+.extract-result { padding: 14px; background: var(--bg-tertiary); border-top: 1px solid var(--border); flex-shrink: 0; }
+.extract-result .er-label { font-size: 9px; color: var(--fg-secondary); letter-spacing: 0.1em; text-transform: uppercase; }
+.extract-result .er-value { font-family: 'VT323', monospace; font-size: 20px; color: var(--terminal-green); word-break: break-all; }
+.extract-result .er-detail { font-size: 10px; color: var(--fg-secondary); margin-top: 4px; }
+
+/* === RESPONSIVE === */
+@media (max-width: 1024px) {
+  .main-content { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 768px) {
+  .main-content { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- STATUS BAR -->
+<div class="status-bar" id="statusBar">
+  <span class="indicator"><span class="dot green" id="statusDot"></span><span id="statusText">ONLINE</span></span>
+  <span class="sep">|</span>
+  <span>MODE:</span>
+  <button class="mode-btn active" data-mode="embed" id="modeEmbed">[ EMBED ]</button>
+  <button class="mode-btn" data-mode="extract" id="modeExtract">[ EXTRACT ]</button>
+  <span class="sep">|</span>
+  <span>PID: <span id="pidDisplay">0x0000</span></span>
+  <span class="sep">|</span>
+  <span>REV: 1.0</span>
+  <span style="margin-left:auto;color:var(--fg-secondary)">S-ANCHOR v1</span>
+</div>
+
+<!-- MAIN -->
+<div class="main-content">
+  <!-- LEFT: Carrier Image -->
+  <div>
+    <div class="panel-header">[ CARRIER IMAGE ]</div>
+    <div class="upload-zone" id="carrierZone">
+      <div class="drop-area" id="carrierDrop">
+        <div class="icon">+</div>
+        <div class="hint"><strong>DROP</strong> or click to upload</div>
+        <input type="file" accept="image/png,image/jpeg,image/jpg">
+      </div>
+      <div class="file-info" id="carrierInfo">FILE: none &nbsp;|&nbsp; SIZE: --- x ---</div>
+    </div>
+  </div>
+
+  <!-- CENTER: Watermark / Result -->
+  <div>
+    <div class="panel-header" id="centerPanelTitle">[ WATERMARK INPUT ]</div>
+    <div id="centerContent">
+      <div class="upload-zone" id="watermarkZone">
+        <div class="drop-area" id="watermarkDrop">
+          <div class="icon">+</div>
+          <div class="hint"><strong>TEXT</strong> or image watermark</div>
+          <input type="file" accept="image/png,image/jpeg" id="watermarkFile">
+        </div>
+        <input type="text" id="watermarkText" placeholder="ENTER WATERMARK STRING..."
+          style="width:100%;padding:10px 12px;background:var(--bg-tertiary);border:1px solid var(--border);color:var(--fg-primary);font-family:'JetBrains Mono',monospace;font-size:12px;border-radius:0;outline:none;">
+      </div>
+    </div>
+    <div id="extractResultPanel" style="display:none;" class="extract-result">
+      <div class="er-label">>>> EXTRACTED WATERMARK</div>
+      <div class="er-value" id="extractedText">---</div>
+      <div class="er-detail" id="extractedDetail"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Parameters -->
+  <div>
+    <div class="panel-header">[ PARAMETER CONTROL ]</div>
+    <div class="param-panel">
+      <div class="param-group">
+        <div class="label">ALPHA (embedding strength)</div>
+        <div class="slider-row">
+          <input type="range" id="paramAlpha" min="1" max="20" value="5" step="1">
+          <span class="value" id="alphaDisplay">0.05</span>
+        </div>
+      </div>
+      <div class="param-group">
+        <div class="label">DELTA (quantization step)</div>
+        <div class="slider-row">
+          <input type="range" id="paramDelta" min="10" max="100" value="36" step="1">
+          <span class="value" id="deltaDisplay">36</span>
+        </div>
+      </div>
+      <div class="param-group">
+        <div class="label">LEVEL (DWT decomposition)</div>
+        <div class="slider-row">
+          <input type="range" id="paramLevel" min="1" max="4" value="2" step="1">
+          <span class="value" id="levelDisplay">2</span>
+        </div>
+      </div>
+      <div class="param-group">
+        <div class="label">OPTIONS</div>
+        <div class="toggle-row">
+          <span style="font-size:10px;color:var(--fg-secondary)">SYNC</span>
+          <button class="toggle-btn active" id="toggleSync">ON</button>
+          <span style="font-size:10px;color:var(--fg-secondary);margin-left:12px">BCH</span>
+          <button class="toggle-btn active" id="toggleBch">ON</button>
+        </div>
+      </div>
+      <button class="btn-exec" id="btnExec">&gt;&gt;&gt; EXECUTE &lt;&lt;&lt;</button>
+    </div>
+  </div>
+</div>
+
+<!-- COMPARISON VIEWPORT -->
+<div class="comparison-view" style="border-top:1px solid var(--border);background:var(--bg-secondary);">
+  <div class="panel-header">[ COMPARISON VIEWPORT ]</div>
+  <div class="compare-container" id="compareContainer">
+    <img class="cmp-img" id="cmpOriginal" style="display:none;" alt="original">
+    <img class="cmp-img cmp-top" id="cmpWatermarked" style="display:none;" alt="watermarked">
+    <div class="cmp-divider" id="cmpDivider" style="display:none;"></div>
+    <div class="cmp-handle" id="cmpHandle" style="display:none;">&#9654;</div>
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--border);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;" id="cmpPlaceholder">
+      [ AWAITING INPUT ]
+    </div>
+  </div>
+  <div class="metrics-row">
+    <div><div class="metric-label">PSNR</div><div class="metric-value" id="metricPsnr">--</div></div>
+    <div><div class="metric-label">SSIM</div><div class="metric-value" id="metricSsim">--</div></div>
+    <div><div class="metric-label">BITS</div><div class="metric-value" id="metricBits">--</div></div>
+    <div><div class="metric-label">STATUS</div><div class="metric-value" id="metricStatus" style="color:var(--fg-secondary)">IDLE</div></div>
+  </div>
+</div>
+
+<!-- TERMINAL LOG -->
+<div class="terminal-log">
+  <div class="log-header">[ SYSTEM LOG ]</div>
+  <div class="log-body" id="logBody">
+    <div class="line ok"><span class="ts">[--:--:--]</span> &gt;&gt;&gt; S-ANCHOR v1.0 INIT OK</div>
+    <div class="line"><span class="ts">[--:--:--]</span> &gt;&gt;&gt; waiting for input...</div>
+  </div>
+</div>
+
+<script>
+// === STATE ===
+const state = {
+  mode: 'embed',
+  carrierData: null,
+  watermarkData: null,
+  watermarkText: '',
+  resultData: null,
+  alpha: 0.05,
+  delta: 36,
+  level: 2,
+  syncOn: true,
+  bchOn: true,
+  processing: false
+};
+
+// === DOM REFS ===
+const $ = id => document.getElementById(id);
+const carrierDrop = $('carrierDrop');
+const carrierInfo = $('carrierInfo');
+const watermarkDrop = $('watermarkDrop');
+const watermarkText = $('watermarkText');
+const cmpOriginal = $('cmpOriginal');
+const cmpWatermarked = $('cmpWatermarked');
+const cmpDivider = $('cmpDivider');
+const cmpHandle = $('cmpHandle');
+const cmpPlaceholder = $('cmpPlaceholder');
+const compareContainer = $('compareContainer');
+const logBody = $('logBody');
+const modeEmbed = $('modeEmbed');
+const modeExtract = $('modeExtract');
+const centerPanelTitle = $('centerPanelTitle');
+const centerContent = $('centerContent');
+const extractResultPanel = $('extractResultPanel');
+const extractedText = $('extractedText');
+const extractedDetail = $('extractedDetail');
+const watermarkZone = $('watermarkZone');
+const watermarkFile = $('watermarkFile');
+const btnExec = $('btnExec');
+
+// === LOGGING ===
+function log(msg, type = '') {
+  const now = new Date();
+  const ts = `[${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}]`;
+  const line = document.createElement('div');
+  line.className = 'line ' + type;
+  line.innerHTML = `<span class="ts">${ts}</span> >>> ${msg}`;
+  logBody.appendChild(line);
+  logBody.scrollTop = logBody.scrollHeight;
+}
+
+// === MODE SWITCH ===
+modeEmbed.addEventListener('click', () => { setMode('embed'); });
+modeExtract.addEventListener('click', () => { setMode('extract'); });
+
+function setMode(mode) {
+  state.mode = mode;
+  modeEmbed.classList.toggle('active', mode === 'embed');
+  modeExtract.classList.toggle('active', mode === 'extract');
+  if (mode === 'embed') {
+    centerPanelTitle.textContent = '[ WATERMARK INPUT ]';
+    centerContent.innerHTML = watermarkZone.outerHTML;
+    extractResultPanel.style.display = 'none';
+  } else {
+    centerPanelTitle.textContent = '[ EXTRACT MODE ]';
+    centerContent.innerHTML = '<div style="padding:14px;font-size:10px;color:var(--fg-secondary);">Upload stego image and click EXECUTE to extract watermark</div>';
+    extractResultPanel.style.display = 'block';
+  }
+  log(`Mode switched to ${mode.toUpperCase()}`);
+}
+
+// === DRAG & DROP ===
+function setupDropZone(zone, callback) {
+  const input = zone.querySelector('input[type=file]');
+  zone.addEventListener('click', () => input.click());
+  input.addEventListener('change', (e) => {
+    if (e.target.files[0]) callback(e.target.files[0]);
+  });
+  zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    if (e.dataTransfer.files[0]) callback(e.dataTransfer.files[0]);
+  });
+}
+
+function handleCarrierImage(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      state.carrierData = { file, dataUrl: e.target.result, width: img.width, height: img.height };
+      carrierDrop.innerHTML = ''; carrierDrop.appendChild(img);
+      carrierInfo.textContent = `FILE: ${file.name}  |  SIZE: ${img.width} x ${img.height}`;
+      cmpOriginal.src = e.target.result;
+      cmpOriginal.style.display = '';
+      cmpPlaceholder.style.display = 'none';
+      log(`Carrier loaded: ${file.name} (${img.width}x${img.height})`);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleWatermarkFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    state.watermarkData = { file, dataUrl: e.target.result };
+    const img = new Image();
+    img.onload = () => {
+      const drop = document.querySelector('#watermarkZone .drop-area') || watermarkDrop;
+      drop.innerHTML = ''; drop.appendChild(img);
+      log(`Watermark image loaded: ${file.name}`);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+setupDropZone(carrierDrop, handleCarrierImage);
+setupDropZone(watermarkDrop, handleWatermarkFile);
+
+// === PARAMETERS ===
+$('paramAlpha').addEventListener('input', (e) => {
+  state.alpha = e.target.value / 100;
+  $('alphaDisplay').textContent = state.alpha.toFixed(2);
+});
+$('paramDelta').addEventListener('input', (e) => {
+  state.delta = parseInt(e.target.value);
+  $('deltaDisplay').textContent = state.delta;
+});
+$('paramLevel').addEventListener('input', (e) => {
+  state.level = parseInt(e.target.value);
+  $('levelDisplay').textContent = state.level;
+});
+
+$('toggleSync').addEventListener('click', (e) => {
+  state.syncOn = !state.syncOn;
+  e.target.classList.toggle('active');
+  e.target.textContent = state.syncOn ? 'ON' : 'OFF';
+});
+$('toggleBch').addEventListener('click', (e) => {
+  state.bchOn = !state.bchOn;
+  e.target.classList.toggle('active');
+  e.target.textContent = state.bchOn ? 'ON' : 'OFF';
+});
+
+// === COMPARISON SLIDER ===
+let isDragging = false;
+compareContainer.addEventListener('mousedown', (e) => {
+  if (!state.resultData) return;
+  isDragging = true;
+  updateSlider(e);
+});
+document.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  updateSlider(e);
+});
+document.addEventListener('mouseup', () => { isDragging = false; });
+compareContainer.addEventListener('touchmove', (e) => {
+  if (!state.resultData) return;
+  const touch = e.touches[0];
+  updateSlider({ clientX: touch.clientX });
+});
+
+function updateSlider(e) {
+  const rect = compareContainer.getBoundingClientRect();
+  const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  const pct = (x * 100).toFixed(1);
+  cmpWatermarked.style.setProperty('--slider-pos', pct + '%');
+  cmpDivider.style.left = pct + '%';
+  cmpHandle.style.left = pct + '%';
+}
+
+// === EXECUTE ===
+btnExec.addEventListener('click', async () => {
+  if (state.processing) return;
+
+  if (state.mode === 'embed' && !state.carrierData) {
+    log('No carrier image loaded', 'err'); return;
+  }
+
+  state.processing = true;
+  btnExec.disabled = true;
+  $('metricStatus').textContent = 'BUSY';
+  $('metricStatus').style.color = '#E61919';
+  $('statusDot').className = 'dot';
+  $('statusText').textContent = 'BUSY';
+
+  log('Processing...', 'info');
+
+  try {
+    if (state.mode === 'embed') {
+      await doEmbed();
+    } else {
+      await doExtract();
+    }
+  } catch (err) {
+    log(`Error: ${err.message}`, 'err');
+    $('metricStatus').textContent = 'ERROR';
+    $('metricStatus').style.color = '#E61919';
+  }
+
+  state.processing = false;
+  btnExec.disabled = false;
+  $('statusDot').className = 'dot green';
+  $('statusText').textContent = 'ONLINE';
+});
+
+async function doEmbed() {
+  const text = watermarkText.value.trim() || 'S-ANCHOR';
+  state.watermarkText = text;
+
+  log(`Embedding: "${text}" (alpha=${state.alpha}, delta=${state.delta}, level=${state.level})`, 'info');
+
+  // Convert carrier to base64
+  const b64 = await dataUrlToBase64(state.carrierData.dataUrl);
+
+  log('DWT decomposition...', '');
+  log('DCT block transform...', '');
+  log('SVD + QIM modulation...', '');
+  log('BCH encoding...', '');
+
+  const resp = await fetch('http://127.0.0.1:8080/api/embed', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      image_b64: b64,
+      watermark_text: text,
+      alpha: state.alpha,
+      delta: state.delta,
+      level: state.level,
+      sync_enabled: state.syncOn,
+      bch_enabled: state.bchOn,
+    })
+  });
+
+  if (!resp.ok) {
+    const err = await resp.json();
+    throw new Error(err.error || `HTTP ${resp.status}`);
+  }
+
+  const data = await resp.json();
+  state.resultData = data;
+
+  // Show watermarked image
+  cmpWatermarked.src = 'data:image/png;base64,' + data.image_b64;
+  cmpWatermarked.style.display = '';
+  cmpDivider.style.display = '';
+  cmpHandle.style.display = '';
+  cmpWatermarked.style.setProperty('--slider-pos', '50%');
+  cmpDivider.style.left = '50%';
+  cmpHandle.style.left = '50%';
+
+  // Metrics
+  $('metricPsnr').textContent = data.psnr + ' dB';
+  $('metricSsim').textContent = data.ssim;
+  $('metricBits').textContent = data.bits_embedded;
+  $('metricStatus').textContent = 'OK';
+  $('metricStatus').style.color = '#4AF626';
+
+  log(`DONE  PSNR=${data.psnr}dB  SSIM=${data.ssim}  bits=${data.bits_embedded}`, 'ok');
+}
+
+async function doExtract() {
+  if (!state.carrierData) {
+    log('No stego image loaded', 'err'); return;
+  }
+
+  const b64 = await dataUrlToBase64(state.carrierData.dataUrl);
+
+  log('Extracting watermark...', 'info');
+  log('DWT decomposition...', '');
+  log('DCT block transform...', '');
+  log('SVD + QIM demodulation...', '');
+  log('Sync pattern correlation...', '');
+  log('BCH decoding...', '');
+
+  const resp = await fetch('http://127.0.0.1:8080/api/extract', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      image_b64: b64,
+      delta: state.delta,
+      level: state.level,
+      sync_enabled: state.syncOn,
+      bch_enabled: state.bchOn,
+    })
+  });
+
+  if (!resp.ok) {
+    const err = await resp.json();
+    throw new Error(err.error || `HTTP ${resp.status}`);
+  }
+
+  const data = await resp.json();
+
+  extractedText.textContent = data.watermark_text || '(empty)';
+  extractedDetail.textContent = `sync: ${data.sync_found ? 'FOUND' : 'NOT FOUND'}  |  corr: ${data.sync_corr}  |  hex: ${data.watermark_hex}`;
+  extractResultPanel.style.display = 'block';
+
+  $('metricStatus').textContent = 'OK';
+  $('metricStatus').style.color = '#4AF626';
+
+  log(`Extracted: "${data.watermark_text}" (sync=${data.sync_found})`, 'ok');
+}
+
+async function dataUrlToBase64(dataUrl) {
+  const resp = await fetch(dataUrl);
+  const blob = await resp.blob();
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const b64 = reader.result.split(',')[1];
+      resolve(b64);
+    };
+    reader.readAsDataURL(blob);
+  });
+}
+
+// === PID ===
+$('pidDisplay').textContent = '0x' + Math.floor(Math.random() * 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+
+// === INIT LOG ===
+log('System ready. ' + (state.mode === 'embed' ? 'Upload carrier image and enter watermark text.' : 'Upload stego image to extract.'), '');
+</script>
+</body>
+</html>

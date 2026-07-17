@@ -1,0 +1,36 @@
+# AI 规则文件 - 禁止提交版本控制
+AGENTS.md
+AGENTS.txt
+AGENT.md
+AGENT.txt
+agent-readme.md
+RULES.md
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Temp
+test_*.py
+test_*.txt
+test_*.png
+_analysis/
+*.zip
