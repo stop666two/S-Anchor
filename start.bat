@@ -56,21 +56,18 @@ echo       done
 
 :: ---- Start Python backend ----
 echo [3] Starting services...
-cd /d "%ROOT%python-core"
-start "S-Anchor-Python" /MIN python -m uvicorn server:app --host 127.0.0.1 --port %PY_PORT% --log-level warning
+start "S-Anchor-Python" /MIN /D "%ROOT%python-core" python -m uvicorn server:app --host 127.0.0.1 --port %PY_PORT% --log-level warning
 echo       Python engine   [port %PY_PORT%]
 timeout /t 4 /nobreak >nul
 
 :: ---- Start Go mediator ----
-cd /d "%ROOT%go-mediator"
 set MEDIATOR_PORT=%GO_PORT%
-start "S-Anchor-Go" /MIN mediator.exe
+start "S-Anchor-Go" /MIN /D "%ROOT%go-mediator" mediator.exe
 echo       Go mediator     [port %GO_PORT%]
 timeout /t 2 /nobreak >nul
 
 :: ---- Start Frontend ----
-cd /d "%ROOT%frontend"
-start "S-Anchor-Frontend" /MIN python -m http.server %FE_PORT% --bind 127.0.0.1
+start "S-Anchor-Frontend" /MIN /D "%ROOT%frontend" python -m http.server %FE_PORT% --bind 127.0.0.1
 echo       Frontend        [port %FE_PORT%]
 timeout /t 3 /nobreak >nul
 
