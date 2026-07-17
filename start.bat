@@ -24,9 +24,14 @@ if %ERRORLEVEL% neq 0 (
 
 :: Install deps
 echo [1] Installing Python packages...
+echo      (this may take a minute on first run)
 cd /d "%ROOT%python-core"
-pip install -r requirements.txt -q 2>nul
-if errorlevel 1 pip install -r requirements.txt
+pip install -r requirements.txt 2>&1 | findstr /v "^$"
+if errorlevel 1 (
+    echo [FAIL] pip install failed. Check network connection.
+    pause
+    exit /b 1
+)
 echo       done
 
 :: Build Go
