@@ -1,106 +1,90 @@
 @echo off
 chcp 65001 >nul
-title S-Anchor :: Control Panel
+title S-Anchor Control Panel
 
 set ROOT=%~dp0
-set PYTHON_PORT=9001
+set PY_PORT=9001
 set GO_PORT=8080
 set FE_PORT=8000
 
 echo.
-echo  ╔═══════════════════════════════════════════╗
-echo  ║       S-ANCHOR v1.0  CONTROL PANEL       ║
-echo  ║   Frequency Domain Watermark System       ║
-echo  ╚═══════════════════════════════════════════╝
+echo ========================================
+echo   S-ANCHOR v1.0
+echo   Frequency Domain Watermark System
+echo ========================================
 echo.
 
-:: ----- Check Python -----
+:: Check Python
 where python >nul 2>&1
 if %ERRORLEVEL% neq 0 (
-    echo  [FAIL] Python not found. Install Python 3.10+ then re-run.
-    echo.
+    echo [FAIL] Python not found. Install Python 3.10+.
     pause
     exit /b 1
 )
 
-:: ----- Check Go -----
-where go >nul 2>&1
-if %ERRORLEVEL% neq 0 (
-    echo  [WARN] Go not found. Will use pre-built mediator.exe if available.
-    echo.
-)
-
-:: ----- Install Python deps -----
-echo  [1/4] Installing Python dependencies...
+:: Install deps
+echo [1] Installing Python packages...
 cd /d "%ROOT%python-core"
 pip install -r requirements.txt -q 2>nul
-if %ERRORLEVEL% neq 0 (
-    pip install -r requirements.txt
-)
-echo         done.
+if errorlevel 1 pip install -r requirements.txt
+echo       done
 
-:: ----- Build Go mediator -----
-echo  [2/4] Preparing Go mediator...
+:: Build Go
+echo [2] Building Go mediator...
 cd /d "%ROOT%go-mediator"
 if not exist "mediator.exe" (
-    go build -o mediator.exe . >nul 2>&1
-    if %ERRORLEVEL% neq 0 (
-        echo  [FAIL] Go build failed.
+    go build -o mediator.exe . 2>nul
+    if errorlevel 1 (
+        echo [FAIL] Go build failed.
         pause
         exit /b 1
     )
 )
-echo         done.
+echo       done
 
-:: ----- Start Python backend -----
-echo  [3/4] Starting services...
+:: Start Python
+echo [3] Starting services...
 cd /d "%ROOT%python-core"
-start "S-Anchor-Python" /MIN cmd /c "python -m uvicorn server:app --host 127.0.0.1 --port %PYTHON_PORT% --log-level warning ^& pause"
-echo         Python engine     [port %PYTHON_PORT%]
+start /MIN "S-Anchor-Python" python -m uvicorn server:app --host 127.0.0.1 --port %PY_PORT% --log-level warning
+echo       Python engine  [port %PY_PORT%]
 timeout /t 3 /nobreak >nul
 
-:: ----- Start Go mediator -----
+:: Start Go
 cd /d "%ROOT%go-mediator"
 set MEDIATOR_PORT=%GO_PORT%
-start "S-Anchor-Go" /MIN cmd /c "mediator.exe ^& pause"
-echo         Go mediator       [port %GO_PORT%]
+start /MIN "S-Anchor-Go" mediator.exe
+echo       Go mediator    [port %GO_PORT%]
 timeout /t 2 /nobreak >nul
 
-:: ----- Start frontend -----
+:: Start Frontend
 cd /d "%ROOT%frontend"
-start "S-Anchor-Frontend" /MIN cmd /c "python -m http.server %FE_PORT% --bind 127.0.0.1 ^& pause"
-echo         Frontend server   [port %FE_PORT%]
+start /MIN "S-Anchor-Frontend" python -m http.server %FE_PORT% --bind 127.0.0.1
+echo       Frontend       [port %FE_PORT%]
 timeout /t 2 /nobreak >nul
 
-:: ----- Verify -----
-echo.
-echo  [4/4] Verifying services...
-cd /d "%ROOT%"
-python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:%GO_PORT%/api/health'); print('         Go mediator:      ONLINE')" 2>nul || echo         Go mediator:      OFFLINE
-python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:%PYTHON_PORT%/api/health'); print('         Python engine:    ONLINE')" 2>nul || echo         Python engine:    OFFLINE
+:: Verify
+echo [4] Verifying...
+python -c "import urllib.request; r=urllib.request.urlopen('http://127.0.0.1:%GO_PORT%/api/health'); print('      Go: OK')" 2>nul || echo      Go: OFFLINE
+python -c "import urllib.request; r=urllib.request.urlopen('http://127.0.0.1:%PY_PORT%/api/health'); print('      Python: OK')" 2>nul || echo      Python: OFFLINE
 
-:: ----- Open browser -----
+:: Done
 echo.
-echo  ╔═══════════════════════════════════════════╗
-echo  ║  SYSTEM ONLINE                            ║
-echo  ║                                           ║
-echo  ║  Frontend   http://127.0.0.1:%FE_PORT%    ║
-echo  ║  Go API     http://127.0.0.1:%GO_PORT%    ║
-echo  ║  Python     http://127.0.0.1:%PYTHON_PORT% ║
-echo  ║                                           ║
-echo  ║  Close this window to keep services running║
-echo  ╚═══════════════════════════════════════════╝
+echo ========================================
+echo  SYSTEM ONLINE
+echo  Frontend:  http://127.0.0.1:%FE_PORT%
+echo  Go:        http://127.0.0.1:%GO_PORT%
+echo  Python:    http://127.0.0.1:%PY_PORT%
+echo ========================================
 echo.
 start http://127.0.0.1:%FE_PORT%
-echo.
-echo  Press any key to stop all services...
+echo Press any key to stop all services...
 pause >nul
 
-:: ----- Shutdown -----
+:: Stop
 echo.
-echo  Stopping services...
+echo Stopping...
 taskkill /f /fi "WINDOWTITLE eq S-Anchor-Python" >nul 2>&1
 taskkill /f /fi "WINDOWTITLE eq S-Anchor-Go" >nul 2>&1
 taskkill /f /fi "WINDOWTITLE eq S-Anchor-Frontend" >nul 2>&1
-echo  All services stopped.
+echo Done.
 timeout /t 2 /nobreak >nul
