@@ -4,95 +4,107 @@ DATA_LEN = 7
 ECC_LEN = 8
 CODE_LEN = 15
 
-# Primitive polynomial x^4 + x + 1
-PRIMITIVE = 0b10011
+# BCH(15,7,5) generator polynomial: x^8 + x^7 + x^6 + x^4 + 1
+# Coefficients from x^8 down to x^0
+GEN = [1, 1, 1, 0, 1, 0, 0, 0, 1]
+GEN_DEG = 8
 
-# GF(16) tables
-gf_exp = [0] * 16
-gf_log = [0] * 16
-
-gf_exp[0] = 1
+# GF(16) with primitive polynomial x^4 + x + 1
+EXP = [0] * 16
+LOG = [0] * 16
+EXP[0] = 1
 for i in range(1, 15):
-    gf_exp[i] = gf_exp[i - 1] << 1
-    if gf_exp[i] & 0b10000:
-        gf_exp[i] ^= PRIMITIVE
-    gf_exp[i] &= 0b1111
-gf_exp[15] = 1
+    EXP[i] = EXP[i-1] << 1
+    if EXP[i] & 0b10000:
+        EXP[i] ^= 0b10011
+    EXP[i] &= 0b1111
+EXP[15] = 1
 for i in range(15):
-    gf_log[gf_exp[i]] = i
-
-
-def gf_mul(a: int, b: int) -> int:
-    if a == 0 or b == 0:
-        return 0
-    return gf_exp[(gf_log[a] + gf_log[b]) % 15]
-
-
-def gf_poly_mul(p1, p2):
-    res = [0] * (len(p1) + len(p2) - 1)
-    for i, c1 in enumerate(p1):
-        for j, c2 in enumerate(p2):
-            res[i + j] ^= gf_mul(c1, c2)
-    return res
-
-
-def gf_poly_eval(poly, x):
-    result = poly[0]
-    for i in range(1, len(poly)):
-        result = gf_mul(result, x) ^ poly[i]
-    return result
-
-
-def make_generator():
-    g = [1]
-    for i in range(1, CORRECTABLE * 2 + 1):
-        g = gf_poly_mul(g, [1, gf_exp[i]])
-    return g
-
-
-CORRECTABLE = 3
-GENERATOR = make_generator()
-
-
-def _poly_shift_left(poly, n):
-    return poly + [0] * n
+    LOG[EXP[i]] = i
 
 
 def encode(data_bits: np.ndarray) -> np.ndarray:
     assert len(data_bits) == DATA_LEN
-    padded = list(data_bits) + [0] * ECC_LEN
-    gen = GENERATOR[:]
+    m = list(data_bits) + [0] * ECC_LEN
     for i in range(DATA_LEN):
-        if padded[i] != 0:
-            shift = gen[:]
-            shift = shift + [0] * (len(padded) - len(shift) - i) if len(shift) < len(padded) - i else shift[:len(padded) - i]
-            for j in range(min(len(shift), len(padded) - i)):
-                padded[i + j] ^= shift[j] if j < len(shift) else 0
+        if m[i]:
+            for j in range(GEN_DEG + 1):
+                m[i + j] ^= GEN[j]
     codeword = np.zeros(CODE_LEN, dtype=np.int8)
     codeword[:DATA_LEN] = data_bits
-    codeword[DATA_LEN:] = padded[DATA_LEN:]
+    codeword[DATA_LEN:] = m[DATA_LEN:]
     return codeword
 
 
+def _gf_poly_eval(poly, x):
+    r = 0
+    for c in poly:
+        if r and c:
+            r = EXP[(LOG[r] + LOG[c]) % 15]
+        elif c:
+            r = c
+        r ^= 0
+        r = r
+    return r
+
+
+def _eval_at(poly, alpha_pow):
+    result = 0
+    for c in poly:
+        if result == 0:
+            result = c
+        else:
+            if result and alpha_pow:
+                result = EXP[(LOG[result] + alpha_pow) % 15]
+            result ^= c
+    return result
+
+
+def _is_valid(codeword):
+    alpha_pows = [1, 3]  # alpha^1 and alpha^3 are roots
+    for ap in alpha_pows:
+        val = _eval_at(list(codeword), ap)
+        if val != 0:
+            return False
+    # Check S2, S4 (conjugates of S1)
+    for ap in [2, 4, 6, 8, 12, 9]:
+        val = _eval_at(list(codeword), ap)
+        if val != 0:
+            return False
+    return True
+
+
 def decode(received: np.ndarray) -> np.ndarray:
+    if _is_valid(received):
+        return received[:DATA_LEN]
+
+    n = len(received)
+    for i in range(n):
+        t = received.copy(); t[i] ^= 1
+        if _is_valid(t): return t[:DATA_LEN]
+
+    for i in range(n):
+        for j in range(i + 1, n):
+            t = received.copy(); t[i] ^= 1; t[j] ^= 1
+            if _is_valid(t): return t[:DATA_LEN]
+
     return received[:DATA_LEN]
 
 
 def bits_to_bytes(bits: np.ndarray) -> bytes:
-    result = bytearray()
+    r = bytearray()
     for i in range(0, len(bits), 8):
-        byte = 0
+        b = 0
         for j in range(min(8, len(bits) - i)):
-            byte = (byte << 1) | int(bits[i + j])
-        result.append(byte)
-    return bytes(result)
+            b = (b << 1) | int(bits[i + j])
+        r.append(b)
+    return bytes(r)
 
 
 def bytes_to_bits(data: bytes, n_bits: int) -> np.ndarray:
     bits = np.zeros(n_bits, dtype=np.int8)
     for i in range(n_bits):
-        byte_idx = i // 8
-        bit_idx = i % 8
-        if byte_idx < len(data):
-            bits[i] = (data[byte_idx] >> (7 - bit_idx)) & 1
+        bi = i % 8
+        if i // 8 < len(data):
+            bits[i] = (data[i // 8] >> (7 - bi)) & 1
     return bits
