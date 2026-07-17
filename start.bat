@@ -77,21 +77,7 @@ timeout /t 3 /nobreak >nul
 :: ---- Verify ----
 echo [4] Verifying...
 cd /d "%ROOT%"
-python -c "
-import urllib.request
-try:
-    r = urllib.request.urlopen('http://127.0.0.1:%GO_PORT%/api/health', timeout=3)
-    print('       Go:           OK (%s)' % r.status)
-except: print('       Go:           OFFLINE')
-try:
-    r = urllib.request.urlopen('http://127.0.0.1:%PY_PORT%/api/health', timeout=3)
-    print('       Python:       OK (%s)' % r.status)
-except: print('       Python:       OFFLINE')
-try:
-    r = urllib.request.urlopen('http://127.0.0.1:%FE_PORT%', timeout=3)
-    print('       Frontend:     OK (%s)' % r.status)
-except: print('       Frontend:     OFFLINE')
-"
+python "%ROOT%python-core\check_services.py"
 
 :: ---- Done ----
 echo.
