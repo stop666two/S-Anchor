@@ -36,18 +36,6 @@ def encode(data_bits: np.ndarray) -> np.ndarray:
     return codeword
 
 
-def _gf_poly_eval(poly, x):
-    r = 0
-    for c in poly:
-        if r and c:
-            r = EXP[(LOG[r] + LOG[c]) % 15]
-        elif c:
-            r = c
-        r ^= 0
-        r = r
-    return r
-
-
 def _eval_at(poly, alpha_pow):
     result = 0
     for c in poly:

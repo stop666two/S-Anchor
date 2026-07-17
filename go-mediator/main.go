@@ -186,14 +186,14 @@ func handleHealth(w http.ResponseWriter, r *http.Request) {
 
 func handleUpload(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
+		jsonError(w, http.StatusMethodNotAllowed, "method not allowed")
 		return
 	}
 
 	r.ParseMultipartForm(32 << 20)
 	file, _, err := r.FormFile("image")
 	if err != nil {
-		http.Error(w, `{"error":"no image file"}`, http.StatusBadRequest)
+		jsonError(w, http.StatusBadRequest, "no image file")
 		return
 	}
 	defer file.Close()

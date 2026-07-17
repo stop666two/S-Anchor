@@ -118,7 +118,6 @@ def embed_watermark(carrier: Image.Image, watermark_data: bytes, config: Waterma
     y = r_arr * 0.299 + g_arr * 0.587 + b_arr * 0.114
     original_y = y.copy()
     full = get_full_coeffs(y, config.level)
-    ll_full = full[0].copy()
 
     blocks, ll_shape = dct_blockwise(full[0])
     n_avail = blocks.shape[0]
@@ -143,7 +142,8 @@ def embed_watermark(carrier: Image.Image, watermark_data: bytes, config: Waterma
 
     result = Image.fromarray(np.stack([ro, go, bo], axis=2), 'RGB')
     p = round(psnr(np.array(carrier_rgb), np.array(result)), 2)
-    s = round(ssim(np.array(r, dtype=np.float64), ro.astype(np.float64)), 4)
+    y_modified = ro.astype(np.float64) * 0.299 + go.astype(np.float64) * 0.587 + bo.astype(np.float64) * 0.114
+    s = round(ssim(y_orig, y_modified), 4)
 
     return result, {'psnr': p, 'ssim': s, 'bits_embedded': len(payload), 'level_used': config.level}
 
