@@ -70,7 +70,15 @@ def embed_watermark(
     if config is None:
         config = WatermarkConfig()
 
-    carrier_rgb = carrier.convert('RGB')
+    divisor = 8 * (2 ** config.level)
+    w, h = carrier.size
+    new_w = (w // divisor) * divisor
+    new_h = (h // divisor) * divisor
+    if new_w < divisor or new_h < divisor:
+        raise ValueError(f"Image too small: need at least {divisor}x{divisor}")
+    carrier_resized = carrier.resize((new_w, new_h), Image.LANCZOS)
+
+    carrier_rgb = carrier_resized.convert('RGB')
     r, g, b = carrier_rgb.split()
     r_arr = np.array(r, dtype=np.float64)
     g_arr = np.array(g, dtype=np.float64)
@@ -80,6 +88,7 @@ def embed_watermark(
     original_y = y_channel.copy()
     full_coeffs = get_full_coeffs(y_channel, config.level)
     ll = full_coeffs[0]
+
     dct_blocks, ll_shape = dct_blockwise(ll)
     n_available = dct_blocks.shape[0]
 
@@ -89,6 +98,7 @@ def embed_watermark(
 
     modified_dct = embed_bits_in_blocks(dct_blocks, payload, config.delta, len(payload))
     modified_ll = idct_blockwise(modified_dct, ll_shape)
+
     watermarked_y = reconstruct_from_ll(modified_ll, full_coeffs, config.level)
     watermarked_y = np.clip(watermarked_y, 0, 255).astype(np.uint8)
 
@@ -98,10 +108,15 @@ def embed_watermark(
     b_out = np.clip(b_arr + diff, 0, 255).astype(np.uint8)
 
     result = Image.fromarray(np.stack([r_out, g_out, b_out], axis=2), 'RGB')
+    psnr_val = round(psnr(np.array(carrier_rgb), np.array(result)), 2)
+    ssim_val = round(ssim(np.array(r, dtype=np.float64), r_out.astype(np.float64)), 4)
+
+    if carrier.size != (new_w, new_h):
+        result = result.resize(carrier.size, Image.LANCZOS)
 
     return result, {
-        'psnr': round(psnr(np.array(carrier_rgb), np.array(result)), 2),
-        'ssim': round(ssim(np.array(r, dtype=np.float64), r_out.astype(np.float64)), 4),
+        'psnr': psnr_val,
+        'ssim': ssim_val,
         'bits_embedded': n_bits,
         'blocks_used': n_bits,
     }
@@ -113,6 +128,12 @@ def extract_watermark(
 ) -> tuple:
     if config is None:
         config = WatermarkConfig()
+
+    divisor = 8 * (2 ** config.level)
+    w, h = stego.size
+    new_w = (w // divisor) * divisor
+    new_h = (h // divisor) * divisor
+    stego = stego.resize((new_w, new_h), Image.LANCZOS)
 
     stego_rgb = stego.convert('RGB')
     r, g, b = stego_rgb.split()
