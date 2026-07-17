@@ -50,6 +50,9 @@ body{background:var(--bg-primary);color:var(--fg-primary);font-family:'JetBrains
 .btn-exec:hover{background:var(--accent-red);color:var(--bg-primary)}
 .btn-exec:active{transform:scale(.98)}
 .btn-exec:disabled{opacity:.3;cursor:not-allowed;border-color:var(--border)}
+.btn-dl{padding:10px 20px;background:transparent;border:1px solid var(--terminal-green);color:var(--terminal-green);font-family:'JetBrains Mono',monospace;font-size:12px;cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:.1em;margin:8px auto;display:none}
+.btn-dl:hover{background:var(--terminal-green);color:var(--bg-primary)}
+.metrics-row .btn-dl-cell{background:var(--bg-tertiary);padding:4px 12px;text-align:center;display:flex;align-items:center;justify-content:center}
 .comparison-view{flex:1;display:flex;flex-direction:column;position:relative}
 .compare-container{flex:1;position:relative;overflow:hidden;cursor:ew-resize}
 .compare-container .cmp-img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain}
@@ -149,6 +152,7 @@ body{background:var(--bg-primary);color:var(--fg-primary);font-family:'JetBrains
     <div><div class="metric-label" data-i18n="metric.ssim">SSIM</div><div class="metric-value" id="metricSsim">--</div></div>
     <div><div class="metric-label" data-i18n="metric.bits">BITS</div><div class="metric-value" id="metricBits">--</div></div>
     <div><div class="metric-label" data-i18n="metric.status">STATUS</div><div class="metric-value" id="metricStatus" style="color:var(--fg-secondary)">IDLE</div></div>
+    <div class="btn-dl-cell"><button class="btn-dl" id="btnDownload" onclick="downloadResult()">[ DOWNLOAD ]</button></div>
   </div>
 </div>
 
@@ -323,7 +327,9 @@ st.processing=true;this.disabled=true;$('metricStatus').textContent=t('status.bu
 var self=this;var p=st.mode==='embed'?doEmbed():doExtract();p.catch(function(err){log(t('log.err')+' '+err.message,'err');$('metricStatus').textContent=t('status.error');$('metricStatus').style.color='#E61919';$('statusDot').className='dot red';$('statusText').innerHTML=t('status.error');}).then(function(){st.processing=false;self.disabled=false;$('statusDot').className='dot green';$('statusText').innerHTML=t('status.online');});};
 async function doEmbed(){var t2=$('watermarkText');var txt=(t2?t2.value.trim():'')||'S-ANCHOR';st.watermarkText=txt;log(t('log.embed')+' "'+txt+'" (alpha='+st.alpha+', delta='+st.delta+', level='+st.level+')');var b64=await d2b(st.carrierData.dataUrl);log(t('log.dwt'));log(t('log.dct'));log(t('log.svd'));log(t('log.bch'));
 var r=await fetch('http://127.0.0.1:8080/api/embed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image_b64:b64,watermark_text:txt,alpha:st.alpha,delta:st.delta,level:st.level,sync_enabled:st.syncOn,bch_enabled:st.bchOn})});
-if(!r.ok){var e=await r.json();throw new Error(e.error||'HTTP '+r.status);}var d=await r.json();st.resultData=d;$('cmpWatermarked').src='data:image/png;base64,'+d.image_b64;$('cmpWatermarked').style.display='';$('cmpDivider').style.display='';$('cmpHandle').style.display='';$('cmpWatermarked').style.setProperty('--slider-pos','50%');$('cmpDivider').style.left='50%';$('cmpHandle').style.left='50%';$('metricPsnr').textContent=d.psnr+' dB';$('metricSsim').textContent=d.ssim;$('metricBits').textContent=d.bits_embedded;$('metricStatus').textContent=t('status.online');$('metricStatus').style.color='#4AF626';log(t('log.done')+'  PSNR='+d.psnr+'dB  SSIM='+d.ssim+'  bits='+d.bits_embedded,'ok');}
+if(!r.ok){var e=await r.json();throw new Error(e.error||'HTTP '+r.status);}var d=await r.json();st.resultData=d;$('cmpWatermarked').src='data:image/png;base64,'+d.image_b64;$('cmpWatermarked').style.display='';$('cmpDivider').style.display='';$('cmpHandle').style.display='';$('cmpWatermarked').style.setProperty('--slider-pos','50%');$('cmpDivider').style.left='50%';$('cmpHandle').style.left='50%';$('metricPsnr').textContent=d.psnr+' dB';$('metricSsim').textContent=d.ssim;$('metricBits').textContent=d.bits_embedded;$('metricStatus').textContent=t('status.online');$('metricStatus').style.color='#4AF626';$('btnDownload').style.display='inline-block';$('btnDownload').dataset.b64=d.image_b64;log(t('log.done')+'  PSNR='+d.psnr+'dB  SSIM='+d.ssim+'  bits='+d.bits_embedded,'ok');}
+
+function downloadResult(){var b64=$('btnDownload').dataset.b64;if(!b64)return;var a=document.createElement('a');a.href='data:image/png;base64,'+b64;a.download='s-anchor_watermarked.png';document.body.appendChild(a);a.click();document.body.removeChild(a);log('Download: s-anchor_watermarked.png');}
 async function doExtract(){var b64=await d2b(st.carrierData.dataUrl);log(t('log.extract'));log(t('log.dwt'));log(t('log.dct'));log(t('log.svd'));log(t('log.sync'));log(t('log.bch'));
 var r=await fetch('http://127.0.0.1:8080/api/extract',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image_b64:b64,delta:st.delta,level:st.level,sync_enabled:st.syncOn,bch_enabled:st.bchOn})});
 if(!r.ok){var e=await r.json();throw new Error(e.error||'HTTP '+r.status);}var d=await r.json();$('extractedText').textContent=d.watermark_text||'(empty)';var ss=d.sync_found?t('log.syncFound'):t('log.syncNotFound');$('extractedDetail').textContent=ss+'  |  corr: '+d.sync_corr+'  |  hex: '+d.watermark_hex;$('extractResultPanel').style.display='block';$('metricStatus').textContent=t('status.online');$('metricStatus').style.color='#4AF626';log(t('log.extracted')+' "'+d.watermark_text+'" ('+ss+')','ok');}
