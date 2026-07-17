@@ -74,15 +74,40 @@ def _extract_payload(all_bits: np.ndarray, config: WatermarkConfig) -> tuple:
     return bits_to_bytes(payload_bits), corr
 
 
+def _min_blocks_for_config(config: WatermarkConfig) -> int:
+    base = 64
+    if config.bch_enabled:
+        base = ((base + 6) // 7) * 15
+    if config.sync_enabled:
+        base += 64
+    return base
+
+
+def _auto_level(img_w: int, img_h: int, config: WatermarkConfig) -> int:
+    needed = _min_blocks_for_config(config)
+    for level in range(config.level, 0, -1):
+        d = 8 * (2 ** level)
+        w = (img_w // d) * d
+        h = (img_h // d) * d
+        if w < d or h < d:
+            continue
+        ll_blocks = (w // (8 * (2 ** level))) * (h // (8 * (2 ** level)))
+        if ll_blocks >= needed:
+            return level
+    return 1
+
+
 def embed_watermark(carrier: Image.Image, watermark_data: bytes, config: WatermarkConfig = None) -> tuple:
     if config is None:
         config = WatermarkConfig()
 
+    used_level = _auto_level(carrier.size[0], carrier.size[1], config)
+    if used_level < config.level:
+        config = WatermarkConfig(**{**config.__dict__, 'level': used_level})
+
     divisor = 8 * (2 ** config.level)
     new_w = (carrier.size[0] // divisor) * divisor
     new_h = (carrier.size[1] // divisor) * divisor
-    if new_w < divisor or new_h < divisor:
-        raise ValueError(f"Image too small: minimum {divisor}x{divisor} pixels for level={config.level}")
 
     carrier = carrier.resize((new_w, new_h), Image.LANCZOS)
     carrier_rgb = carrier.convert('RGB')
@@ -120,6 +145,8 @@ def extract_watermark(stego: Image.Image, config: WatermarkConfig = None) -> tup
     if config is None:
         config = WatermarkConfig()
 
+    used_level = _auto_level(stego.size[0], stego.size[1], config)
+    config = WatermarkConfig(**{**config.__dict__, 'level': used_level})
     divisor = 8 * (2 ** config.level)
     new_w = (stego.size[0] // divisor) * divisor
     new_h = (stego.size[1] // divisor) * divisor
