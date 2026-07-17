@@ -14,7 +14,15 @@ echo   Frequency Domain Watermark System
 echo ========================================
 echo.
 
-:: Check Python
+:: ---- Kill orphaned processes ----
+echo [0] Cleaning up previous instances...
+taskkill /f /im uvicorn.exe >nul 2>&1
+taskkill /f /im mediator.exe >nul 2>&1
+taskkill /f /fi "WINDOWTITLE eq S-Anchor-*" >nul 2>&1
+echo       done
+timeout /t 1 /nobreak >nul
+
+:: ---- Check Python ----
 where python >nul 2>&1
 if %ERRORLEVEL% neq 0 (
     echo [FAIL] Python not found. Install Python 3.10+.
@@ -22,23 +30,22 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-:: Install deps
+:: ---- Install deps ----
 echo [1] Installing Python packages...
 echo      (this may take a minute on first run)
 cd /d "%ROOT%python-core"
 pip install -r requirements.txt 2>&1 | findstr /v "^$"
 if errorlevel 1 (
-    echo [FAIL] pip install failed. Check network connection.
+    echo [FAIL] pip install failed.
     pause
     exit /b 1
 )
 echo       done
 
-:: Build Go
+:: ---- Build Go ----
 echo [2] Building Go mediator...
 cd /d "%ROOT%go-mediator"
-if exist "mediator.exe" del /f /q "mediator.exe" >nul 2>&1
-echo      running: go build -o mediator.exe
+if exist "mediator.exe" del /f "mediator.exe" >nul 2>&1
 go build -o mediator.exe . 2>&1
 if errorlevel 1 (
     echo [FAIL] Go build failed. Install Go from https://go.dev/dl/
@@ -47,32 +54,46 @@ if errorlevel 1 (
 )
 echo       done
 
-:: Start Python
+:: ---- Start Python backend ----
 echo [3] Starting services...
 cd /d "%ROOT%python-core"
-start /MIN "S-Anchor-Python" python -m uvicorn server:app --host 127.0.0.1 --port %PY_PORT% --log-level warning
-echo       Python engine  [port %PY_PORT%]
-timeout /t 3 /nobreak >nul
+start "S-Anchor-Python" /MIN python -m uvicorn server:app --host 127.0.0.1 --port %PY_PORT% --log-level warning
+echo       Python engine   [port %PY_PORT%]
+timeout /t 4 /nobreak >nul
 
-:: Start Go
+:: ---- Start Go mediator ----
 cd /d "%ROOT%go-mediator"
 set MEDIATOR_PORT=%GO_PORT%
-start /MIN "S-Anchor-Go" mediator.exe
-echo       Go mediator    [port %GO_PORT%]
+start "S-Anchor-Go" /MIN mediator.exe
+echo       Go mediator     [port %GO_PORT%]
 timeout /t 2 /nobreak >nul
 
-:: Start Frontend
+:: ---- Start Frontend ----
 cd /d "%ROOT%frontend"
-start /MIN "S-Anchor-Frontend" python -m http.server %FE_PORT% --bind 127.0.0.1
-echo       Frontend       [port %FE_PORT%]
-timeout /t 2 /nobreak >nul
+start "S-Anchor-Frontend" /MIN python -m http.server %FE_PORT% --bind 127.0.0.1
+echo       Frontend        [port %FE_PORT%]
+timeout /t 3 /nobreak >nul
 
-:: Verify
+:: ---- Verify ----
 echo [4] Verifying...
-python -c "import urllib.request; r=urllib.request.urlopen('http://127.0.0.1:%GO_PORT%/api/health'); print('      Go: OK')" 2>nul || echo      Go: OFFLINE
-python -c "import urllib.request; r=urllib.request.urlopen('http://127.0.0.1:%PY_PORT%/api/health'); print('      Python: OK')" 2>nul || echo      Python: OFFLINE
+cd /d "%ROOT%"
+python -c "
+import urllib.request
+try:
+    r = urllib.request.urlopen('http://127.0.0.1:%GO_PORT%/api/health', timeout=3)
+    print('       Go:           OK (%s)' % r.status)
+except: print('       Go:           OFFLINE')
+try:
+    r = urllib.request.urlopen('http://127.0.0.1:%PY_PORT%/api/health', timeout=3)
+    print('       Python:       OK (%s)' % r.status)
+except: print('       Python:       OFFLINE')
+try:
+    r = urllib.request.urlopen('http://127.0.0.1:%FE_PORT%', timeout=3)
+    print('       Frontend:     OK (%s)' % r.status)
+except: print('       Frontend:     OFFLINE')
+"
 
-:: Done
+:: ---- Done ----
 echo.
 echo ========================================
 echo  SYSTEM ONLINE
@@ -81,15 +102,19 @@ echo  Go:        http://127.0.0.1:%GO_PORT%
 echo  Python:    http://127.0.0.1:%PY_PORT%
 echo ========================================
 echo.
+timeout /t 1 /nobreak >nul
 start http://127.0.0.1:%FE_PORT%
+echo.
 echo Press any key to stop all services...
 pause >nul
 
-:: Stop
+:: ---- Shutdown ----
 echo.
 echo Stopping...
 taskkill /f /fi "WINDOWTITLE eq S-Anchor-Python" >nul 2>&1
 taskkill /f /fi "WINDOWTITLE eq S-Anchor-Go" >nul 2>&1
 taskkill /f /fi "WINDOWTITLE eq S-Anchor-Frontend" >nul 2>&1
+taskkill /f /im uvicorn.exe >nul 2>&1
+taskkill /f /im mediator.exe >nul 2>&1
 echo Done.
 timeout /t 2 /nobreak >nul
