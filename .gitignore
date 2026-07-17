@@ -33,4 +33,12 @@ test_*.py
 test_*.txt
 test_*.png
 _analysis/
+
+# Original subproject archives
+subprojects/
 *.zip
+*.rar
+*.7z
+
+# Tech chain doc (no longer needed in repo)
+技术链文档.md
