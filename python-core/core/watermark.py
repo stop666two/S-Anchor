@@ -70,7 +70,8 @@ def _extract_payload(all_bits: np.ndarray, config: WatermarkConfig) -> tuple:
                     parts.append(bch_decode(chunk))
             payload_bits = np.concatenate(parts) if parts else payload_bits
 
-    payload_bits = payload_bits[:64]
+    max_data = min(len(payload_bits), 256)
+    payload_bits = payload_bits[:max_data]
     return bits_to_bytes(payload_bits), corr
 
 
@@ -129,7 +130,13 @@ def embed_watermark(carrier: Image.Image, watermark_data: bytes, config: Waterma
     y_watermarked = reconstruct_from_ll(ll_rebuilt, full, config.level)
     y_watermarked = np.clip(y_watermarked, 0, 255).astype(np.uint8)
 
-    dy = y_watermarked.astype(np.float64) - original_y.astype(np.float64)
+    y_new = y_watermarked.astype(np.float64)
+    y_orig = original_y.astype(np.float64)
+    # invert YUV->RGB: R = Y + 1.402*(V-128), G = Y - 0.344*(U-128) - 0.714*(V-128), B = Y + 1.772*(U-128)
+    # Since we only modify Y, but the change must be distributed to RGB proportionally to the Y weights:
+    # delta_Y -> R: 1.0/0.299, G: 1.0/0.587, B: 1.0/0.114 — but that would overshoot.
+    # Instead apply delta_Y directly to each channel (Y is luminance, all channels shift equally)
+    dy = y_new - y_orig
     ro = np.clip(r_arr + dy, 0, 255).astype(np.uint8)
     go = np.clip(g_arr + dy, 0, 255).astype(np.uint8)
     bo = np.clip(b_arr + dy, 0, 255).astype(np.uint8)
@@ -156,8 +163,7 @@ def extract_watermark(stego: Image.Image, config: WatermarkConfig = None) -> tup
 
     full = get_full_coeffs(y, config.level)
     blocks, _ = dct_blockwise(full[0])
-    n_bits = min(blocks.shape[0], 256)
-    all_bits = extract_bits_from_blocks(blocks, config.delta, n_bits)
+    all_bits = extract_bits_from_blocks(blocks, config.delta, blocks.shape[0])
 
     raw, corr = _extract_payload(all_bits, config)
-    return raw, {'sync_corr': round(float(corr), 4)}
+    return raw, {'sync_corr': round(float(corr), 4), 'sync_found': corr >= 0.5}

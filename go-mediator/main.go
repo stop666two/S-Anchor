@@ -72,8 +72,10 @@ func (tb *tokenBucket) allow() bool {
 	defer tb.mu.Unlock()
 	now := time.Now()
 	elapsed := now.Sub(tb.lastFill)
-	tb.lastFill = now
-	tb.tokens += int(elapsed / tb.interval)
+	n := int(elapsed / tb.interval)
+	accounted := time.Duration(n) * tb.interval
+	tb.lastFill = tb.lastFill.Add(accounted)
+	tb.tokens += n
 	if tb.tokens > tb.limit {
 		tb.tokens = tb.limit
 	}
@@ -148,9 +150,15 @@ func proxyToPython(w http.ResponseWriter, r *http.Request, path string, body io.
 	w.Write(respBody)
 }
 
+func jsonError(w http.ResponseWriter, code int, msg string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(ErrorResponse{Error: msg})
+}
+
 func handleEmbed(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
+		jsonError(w, http.StatusMethodNotAllowed, "method not allowed")
 		return
 	}
 	proxyToPython(w, r, "/api/embed", r.Body)
@@ -158,16 +166,21 @@ func handleEmbed(w http.ResponseWriter, r *http.Request) {
 
 func handleExtract(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
+		jsonError(w, http.StatusMethodNotAllowed, "method not allowed")
 		return
 	}
 	proxyToPython(w, r, "/api/extract", r.Body)
 }
 
 func handleHealth(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	workerPool.mu.Lock()
+	active := workerPool.active
+	cap := workerPool.capacity
+	workerPool.mu.Unlock()
 	json.NewEncoder(w).Encode(map[string]string{
 		"status":  "ok",
-		"workers": fmt.Sprintf("%d/%d", workerPool.active, workerPool.capacity),
+		"workers": fmt.Sprintf("%d/%d", active, cap),
 	})
 }
 

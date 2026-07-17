@@ -33,7 +33,8 @@ def extract_bit(svd_s: np.ndarray, delta: float) -> int:
 def embed_bits_in_blocks(dct_blocks: np.ndarray, bits: np.ndarray, delta: float, sync_len: int) -> np.ndarray:
     n_blocks = dct_blocks.shape[0]
     n_bits = len(bits)
-    assert n_blocks >= n_bits, f"Not enough blocks ({n_blocks}) for {n_bits} bits"
+    if n_blocks < n_bits:
+        raise ValueError(f"Not enough blocks ({n_blocks}) for {n_bits} bits")
 
     modified = dct_blocks.copy()
 
