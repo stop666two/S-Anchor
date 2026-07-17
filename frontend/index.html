@@ -160,7 +160,7 @@ d.ondrop=function(e){e.preventDefault();d.classList.remove('dgo');if(e.dataTrans
 su($('cd'),function(f){var r=new FileReader();r.onload=function(e){var img=new Image();img.onload=function(){st.cd={f:f,du:e.target.result,w:img.width,h:img.height};
 $('cd').innerHTML='';$('cd').appendChild(img);$('ci').textContent=f.name+' | '+img.width+'x'+img.height;
 $('co').src=e.target.result;$('co').style.display='';$('cph').style.display='none';$('preplace').style.display='none';rw();lg('Carrier: '+f.name);};img.src=e.target.result;};r.readAsDataURL(f);});
-su($('wimd'),function(f){var r=new FileReader();r.onload=function(e){var img=new Image();img.onload=function(){st.wd={f:f,du:e.target.result,w:img.width,h:img.height};
+su($('wimd'),function(f){var r=new FileReader();r.onload=function(e){var img=new Image();img.onload=function(){st.wd={f:f,du:e.target.result,w:img.width,h:img.height,el:img};
 $('wimd').innerHTML='';$('wimd').appendChild(img);rw();lg('WM img: '+f.name);};img.src=e.target.result;};r.readAsDataURL(f);});
 
 function drawWm(ctx,px,py,rt,fs,s,op,txt,ox,oy){ctx.save();ctx.translate(ox+st.cd.w*s*(px/100),oy+st.cd.h*s*(py/100));
@@ -173,7 +173,7 @@ $('pc').style.display='block';var img=new Image();img.onload=function(){var cw=$
 $('pc').width=cw;$('pc').height=ch;var ctx=$('pc').getContext('2d');ctx.clearRect(0,0,cw,ch);
 var s=Math.min(cw/st.cd.w,ch/st.cd.h);var ox=(cw-st.cd.w*s)/2,oy=(ch-st.cd.h*s)/2;
 ctx.drawImage(img,ox,oy,st.cd.w*s,st.cd.h*s);
-if(st.wt===0){drawWm(ctx,st.px,st.py,st.rt,st.fs,s,st.op/100,st.wtx||'S-ANCHOR',ox,oy);}
+if(st.wt===0){drawWm(ctx,st.px,st.py,st.rt,st.fs,s,st.op/100,st.wtx||"S-ANCHOR",ox,oy);}if(st.wt===1&&st.wd&&st.wd.el){ctx.save();ctx.translate(ox+st.cd.w*s*(st.px/100),oy+st.cd.h*s*(st.py/100));ctx.rotate(st.rt*Math.PI/180);ctx.globalAlpha=st.op/100;var ws=Math.min(200/st.wd.el.width,200/st.wd.el.height);ctx.drawImage(st.wd.el,-st.wd.el.width*ws/2,-st.wd.el.height*ws/2,st.wd.el.width*ws,st.wd.el.height*ws);ctx.restore();}
 wms.forEach(function(w){drawWm(ctx,w.px,w.py,w.rt,w.fs,s,w.op/100,w.txt,ox,oy);});};img.src=st.cd.du;}
 
 window.onresize=function(){rw();};
