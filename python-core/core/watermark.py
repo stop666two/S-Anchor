@@ -138,7 +138,7 @@ def embed_watermark(carrier: Image.Image, watermark_data: bytes, config: Waterma
     p = round(psnr(np.array(carrier_rgb), np.array(result)), 2)
     s = round(ssim(np.array(r, dtype=np.float64), ro.astype(np.float64)), 4)
 
-    return result, {'psnr': p, 'ssim': s, 'bits_embedded': len(payload)}
+    return result, {'psnr': p, 'ssim': s, 'bits_embedded': len(payload), 'level_used': config.level}
 
 
 def extract_watermark(stego: Image.Image, config: WatermarkConfig = None) -> tuple:

@@ -38,6 +38,7 @@ class EmbedResponse(BaseModel):
     ssim: float
     bits_embedded: int
     job_id: str
+    level_used: int = 2
 
 
 class ExtractResponse(BaseModel):
@@ -83,6 +84,7 @@ def embed(req: EmbedRequest):
         ssim=metrics['ssim'],
         bits_embedded=metrics['bits_embedded'],
         job_id=uuid.uuid4().hex[:12],
+        level_used=metrics.get('level_used', req.level),
     )
 
 
