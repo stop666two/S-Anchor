@@ -23,18 +23,24 @@ echo       done
 timeout /t 1 /nobreak >nul
 
 :: ---- Check Python ----
-where python >nul 2>&1
-if %ERRORLEVEL% neq 0 (
-    echo [FAIL] Python not found. Install Python 3.10+.
-    pause
-    exit /b 1
+py -3 --version >nul 2>&1
+if %ERRORLEVEL% equ 0 (
+    set PY=py -3
+) else (
+    python --version >nul 2>&1
+    if %ERRORLEVEL% neq 0 (
+        echo [FAIL] Python not found. Install Python 3.10+.
+        pause
+        exit /b 1
+    )
+    set PY=python
 )
 
 :: ---- Install deps ----
 echo [1] Installing Python packages...
 echo      (this may take a minute on first run)
 cd /d "%ROOT%python-core"
-pip install -r requirements.txt 2>&1 | findstr /v "^$"
+%PY% -m pip install -r requirements.txt 2>&1 | findstr /v "^$"
 if errorlevel 1 (
     echo [FAIL] pip install failed.
     pause
@@ -56,7 +62,7 @@ echo       done
 
 :: ---- Start Python backend ----
 echo [3] Starting services...
-start "S-Anchor-Python" /MIN /D "%ROOT%python-core" python -m uvicorn server:app --host 127.0.0.1 --port %PY_PORT% --log-level warning
+start "S-Anchor-Python" /MIN /D "%ROOT%python-core" %PY% -m uvicorn server:app --host 127.0.0.1 --port %PY_PORT% --log-level warning
 echo       Python engine   [port %PY_PORT%]
 timeout /t 4 /nobreak >nul
 
@@ -67,14 +73,14 @@ echo       Go mediator     [port %GO_PORT%]
 timeout /t 2 /nobreak >nul
 
 :: ---- Start Frontend ----
-start "S-Anchor-Frontend" /MIN /D "%ROOT%frontend" python -m http.server %FE_PORT% --bind 127.0.0.1
+start "S-Anchor-Frontend" /MIN /D "%ROOT%frontend" %PY% -m http.server %FE_PORT% --bind 127.0.0.1
 echo       Frontend        [port %FE_PORT%]
 timeout /t 3 /nobreak >nul
 
 :: ---- Verify ----
 echo [4] Verifying...
 cd /d "%ROOT%"
-python "%ROOT%python-core\check_services.py"
+%PY% "%ROOT%python-core\check_services.py"
 
 :: ---- Done ----
 echo.
