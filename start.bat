@@ -37,13 +37,13 @@ echo       done
 :: Build Go
 echo [2] Building Go mediator...
 cd /d "%ROOT%go-mediator"
-if not exist "mediator.exe" (
-    go build -o mediator.exe . 2>nul
-    if errorlevel 1 (
-        echo [FAIL] Go build failed.
-        pause
-        exit /b 1
-    )
+if exist "mediator.exe" del /f /q "mediator.exe" >nul 2>&1
+echo      running: go build -o mediator.exe
+go build -o mediator.exe . 2>&1
+if errorlevel 1 (
+    echo [FAIL] Go build failed. Install Go from https://go.dev/dl/
+    pause
+    exit /b 1
 )
 echo       done
 
