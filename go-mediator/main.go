@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"sync"
 	"time"
 )
@@ -227,16 +226,6 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{"service":"s-anchor watermark mediator","version":"1.0.0"}`))
 	}))
-
-	cmd := exec.Command("python", "-m", "uvicorn", "server:app", "--host", "127.0.0.1", "--port", pyPort, "--log-level", "warning")
-	cmd.Dir = "../python-core"
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Start(); err != nil {
-		log.Fatalf("failed to start python backend: %v", err)
-	}
-
-	time.Sleep(2 * time.Second)
 
 	port := os.Getenv("MEDIATOR_PORT")
 	if port == "" {
