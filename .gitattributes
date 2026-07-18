@@ -1,0 +1,10 @@
+# Normalize line endings for all source files
+* text=auto eol=lf
+
+# Specific binary files
+*.exe binary
+*.png binary
+*.ico binary
+*.ttf binary
+*.ttc binary
+*.zip binary

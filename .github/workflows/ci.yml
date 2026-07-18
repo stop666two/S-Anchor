@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  check-agents-md:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Detect AGENTS.md variants in PR
+        run: |
+          CHANGED=$(git diff --name-only ${{ github.event.pull_request.base.sha || github.event.before }} HEAD | grep -Ei '^AGENTS\.(md|txt)$|^AGENT\.md$|^agent-readme\.md$|^RULES\.md$' || true)
+          if [ -n "$CHANGED" ]; then
+            echo "ERROR: AGENTS.md variant(s) detected in changeset:"
+            echo "$CHANGED"
+            exit 1
+          fi
+          echo "OK - no AGENTS.md variants"
+
+  python-lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: python-core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install ruff
+        run: pip install ruff
+      - name: Lint with ruff
+        run: ruff check core/ server.py check_services.py
+
+  go-vet:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: go-mediator
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+      - name: Vet Go code
+        run: go vet ./...
+      - name: Build Go
+        run: go build -o /dev/null .

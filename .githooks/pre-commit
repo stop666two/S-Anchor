@@ -1,0 +1,12 @@
+#!/bin/sh
+# Pre-commit hook: block AGENTS.md and variants from being staged
+# Install via: git config core.hooksPath .githooks
+
+FILES=$(git diff --cached --name-only --diff-filter=A | grep -Ei '^AGENTS\.(md|txt)$|^AGENT\.md$|^agent-readme\.md$|^RULES\.md$' || true)
+
+if [ -n "$FILES" ]; then
+  echo "ERROR: Attempting to commit AGENTS.md variant(s):"
+  echo "$FILES"
+  echo "These files must NOT be committed. Unstage them and try again."
+  exit 1
+fi

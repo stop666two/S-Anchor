@@ -1,0 +1,2 @@
+# Protect AGENTS.md from accidental changes
+/AGENTS.md @project-owner

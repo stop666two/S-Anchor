@@ -29,10 +29,8 @@ build/
 *.swo
 
 # Temp
-test_*.py
-test_*.txt
-test_*.png
 _analysis/
+*.pyc
 
 # Original subproject archives
 subprojects/
@@ -42,3 +40,6 @@ subprojects/
 
 # Tech chain doc (no longer needed in repo)
 技术链文档.md
+
+# Custom githooks directory (tracked via .githooks/)
+.husky/
