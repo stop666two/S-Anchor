@@ -657,7 +657,7 @@ function dw(px,py,rt,fs,op,txt,id){ctx.save();ctx.translate(ox+st.cd.w*s*px/100,
 
 
 
-ctx.font='bold '+Math.round(fs*s/256*50)+'px Inter,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff';ctx.strokeStyle='rgba(0,0,0,0.8)';ctx.lineWidth=3;ctx.strokeText(txt,0,0);ctx.fillText(txt,0,0);ctx.restore()
+ctx.font='bold '+Math.round(fs*Math.min(st.cd.w,st.cd.h)*s/512)+'px Inter,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff';ctx.strokeStyle='rgba(0,0,0,0.8)';ctx.lineWidth=3;ctx.strokeText(txt,0,0);ctx.fillText(txt,0,0);ctx.restore()
 
 
 

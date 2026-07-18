@@ -27,7 +27,8 @@ class VisibleWatermark(BaseWatermark):
         opacity = int(params.get('opacity', 0.3) * 255)
         x_pct = params.get('x', 50)
         y_pct = params.get('y', 50)
-        font_size = params.get('font_size', 48)
+        font_size = int(params.get('font_size', 48) * min(result.width, result.height) / 512)
+        font_size = max(10, min(font_size, result.width // 2))
         rotation = params.get('rotation', 0)
 
         try:
