@@ -1785,7 +1785,7 @@ var d=await r.json();
 
 
 
-var parts=(d.results&&d.results.length)?d.results.map(function(r){var txt=r.text||'';var ok=txt.length>0&&txt!==' ';return{type:r.type,text:txt.substring(0,50),ok:ok}}):[];
+var parts=(d.results&&d.results.length)?d.results.map(function(r){var txt=r.text||'';var ok=txt.length>0&&txt!==' ';if(txt.indexOf('__visible_on_image__')>=0){ok=true;txt='[visible on image]'}return{type:r.type,text:txt.substring(0,50),ok:ok}}):[];
 
 
 

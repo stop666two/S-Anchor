@@ -53,7 +53,7 @@ class VisibleWatermark(BaseWatermark):
         return result, {'text': text, 'opacity': opacity}
 
     def extract(self, stego: Image.Image, params: dict) -> tuple[bytes, dict]:
-        return b'', {}
+        return b'__visible_on_image__', {'note': '直接查看图片可见'}
 
 
 register(VisibleWatermark())
