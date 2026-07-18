@@ -1,14 +1,15 @@
 import numpy as np
+from numpy.typing import NDArray
 
 SYNC_LEN = 64
 
 
-def generate_sync_pattern(seed: int = 42) -> np.ndarray:
+def generate_sync_pattern(seed: int = 42) -> NDArray:
     rng = np.random.default_rng(seed)
     return rng.integers(0, 2, size=SYNC_LEN, dtype=np.int8)
 
 
-def correlate_sync(received: np.ndarray, sync: np.ndarray) -> int:
+def correlate_sync(received: NDArray, sync: NDArray) -> tuple[int, float]:
     sync_normalized = 2 * sync.astype(np.float64) - 1
     best_offset = -1
     best_corr = -1.0

@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.typing import NDArray
 from PIL import Image
 
 from .config import WatermarkConfig
@@ -12,7 +13,7 @@ from .metrics import psnr, ssim
 SYNC_LEN = 64
 
 
-def _make_payload(data: bytes, config: WatermarkConfig, n_blocks: int):
+def _make_payload(data: bytes, config: WatermarkConfig, n_blocks: int) -> tuple[NDArray, int]:
     sync = generate_sync_pattern(config.sync_seed)
     n_sync = SYNC_LEN if config.sync_enabled else 0
     n_data = len(data)
@@ -48,7 +49,7 @@ def _make_payload(data: bytes, config: WatermarkConfig, n_blocks: int):
     return payload, used + n_sync
 
 
-def _read_payload(all_bits: np.ndarray, config: WatermarkConfig):
+def _read_payload(all_bits: NDArray, config: WatermarkConfig) -> tuple[bytes, float, bool]:
     sync = generate_sync_pattern(config.sync_seed)
     if config.sync_enabled:
         offset, corr = correlate_sync(all_bits, sync)
@@ -79,7 +80,7 @@ def _read_payload(all_bits: np.ndarray, config: WatermarkConfig):
 
 
 def _auto_level(img_w: int, img_h: int, config: WatermarkConfig) -> int:
-    needed = 64 + 64  # sync + reasonable data
+    needed = 64 + 64
     if config.bch_enabled:
         needed = ((needed + 6) // 7) * 15 + 64
     for level in range(config.level, 0, -1):
@@ -94,7 +95,7 @@ def _auto_level(img_w: int, img_h: int, config: WatermarkConfig) -> int:
     return 1
 
 
-def embed_watermark(carrier: Image.Image, watermark_data: bytes, config: WatermarkConfig = None) -> tuple:
+def embed_watermark(carrier: Image.Image, watermark_data: bytes, config: WatermarkConfig | None = None) -> tuple[Image.Image, dict]:
     if config is None:
         config = WatermarkConfig()
     level = _auto_level(carrier.size[0], carrier.size[1], config)
@@ -129,7 +130,7 @@ def embed_watermark(carrier: Image.Image, watermark_data: bytes, config: Waterma
     return result, {'psnr': p, 'ssim': s, 'bits_embedded': n_used, 'level_used': level}
 
 
-def extract_watermark(stego: Image.Image, config: WatermarkConfig = None) -> tuple:
+def extract_watermark(stego: Image.Image, config: WatermarkConfig | None = None) -> tuple[bytes, dict]:
     if config is None:
         config = WatermarkConfig()
     level = _auto_level(stego.size[0], stego.size[1], config)

@@ -1,7 +1,8 @@
 import numpy as np
+from numpy.typing import NDArray
 
 
-def embed_bit(svd_u: np.ndarray, svd_s: np.ndarray, svd_vt: np.ndarray, bit: int, delta: float) -> np.ndarray:
+def embed_bit(svd_u: NDArray, svd_s: NDArray, svd_vt: NDArray, bit: int, delta: float) -> NDArray:
     s_max = svd_s[0]
     q = s_max / delta
     r = q - np.floor(q)
@@ -20,7 +21,7 @@ def embed_bit(svd_u: np.ndarray, svd_s: np.ndarray, svd_vt: np.ndarray, bit: int
     return modified
 
 
-def extract_bit(svd_s: np.ndarray, delta: float) -> int:
+def extract_bit(svd_s: NDArray, delta: float) -> int:
     s_max = svd_s[0]
     q = s_max / delta
     r = q - np.floor(q)

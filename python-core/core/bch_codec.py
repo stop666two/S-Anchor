@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.typing import NDArray
 
 DATA_LEN = 7
 ECC_LEN = 8
@@ -23,7 +24,7 @@ for i in range(15):
     LOG[EXP[i]] = i
 
 
-def encode(data_bits: np.ndarray) -> np.ndarray:
+def encode(data_bits: NDArray) -> NDArray:
     if len(data_bits) != DATA_LEN:
         raise ValueError(f'BCH encode requires {DATA_LEN} bits, got {len(data_bits)}')
     m = list(data_bits) + [0] * ECC_LEN
@@ -63,7 +64,7 @@ def _is_valid(codeword):
     return True
 
 
-def decode(received: np.ndarray) -> np.ndarray:
+def decode(received: NDArray) -> NDArray:
     if _is_valid(received):
         return received[:DATA_LEN]
 
@@ -80,7 +81,7 @@ def decode(received: np.ndarray) -> np.ndarray:
     return received[:DATA_LEN]
 
 
-def bits_to_bytes(bits: np.ndarray) -> bytes:
+def bits_to_bytes(bits: NDArray) -> bytes:
     r = bytearray()
     for i in range(0, len(bits), 8):
         b = 0
@@ -90,7 +91,7 @@ def bits_to_bytes(bits: np.ndarray) -> bytes:
     return bytes(r)
 
 
-def bytes_to_bits(data: bytes, n_bits: int) -> np.ndarray:
+def bytes_to_bits(data: bytes, n_bits: int) -> NDArray:
     bits = np.zeros(n_bits, dtype=np.int8)
     for i in range(n_bits):
         bi = i % 8
