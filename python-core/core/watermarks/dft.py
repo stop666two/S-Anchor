@@ -25,7 +25,7 @@ class DftWatermark(BaseWatermark):
 
     def embed(self, carrier: Image.Image, payload: bytes, params: dict) -> tuple[Image.Image, dict]:
         arr = np.array(carrier.convert('L'), dtype=np.float64)
-        strength = params.get('strength', 25.0)
+        strength = params.get('strength', 8.0)
         r_min = params.get('r_min', 0.15)
         r_max = params.get('r_max', 0.35)
 

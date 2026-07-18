@@ -26,7 +26,7 @@ class FreqWatermark(BaseWatermark):
 
     def _make_config(self, params: dict) -> WatermarkConfig:
         return WatermarkConfig(
-            alpha=params.get('alpha', 0.08),
+            alpha=params.get('alpha', 0.15),
             delta=params.get('delta', 36.0),
             level=params.get('level', 2),
             sync_enabled=params.get('sync', True),
