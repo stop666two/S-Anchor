@@ -62,10 +62,11 @@ class FreqWatermark(BaseWatermark):
             data_bits_needed = n_bch * DATA_LEN
             n_data_bits = n_data * 8
             if n_data_bits > data_bits_needed:
-                raise ValueError(
-                    f'Freq watermark too long: need {n_data_bits} bits '
-                    f'({n_data} bytes), capacity {data_bits_needed} bits'
-                )
+            raise ValueError(
+                f'Freq watermark too long: {n_data} bytes exceeds capacity '
+                f'{data_bits_needed//8} bytes. Use LSB type for larger text, '
+                f'turn off SYNC/BCH, or use a larger image.'
+            )
             data_bits = bytes_to_bits(data, n_data_bits)
             if len(data_bits) < data_bits_needed:
                 data_bits = np.pad(data_bits, (0, data_bits_needed - len(data_bits)), 'constant')
