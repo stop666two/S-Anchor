@@ -25,7 +25,15 @@ def _make_payload(data: bytes, config: WatermarkConfig, n_blocks: int) -> tuple[
         n_bch = max(1, avail_data_bits // CODE_LEN)
         used = n_bch * CODE_LEN
         data_bits_needed = n_bch * DATA_LEN
-        data_bits = bytes_to_bits(data, min(n_data * 8, data_bits_needed))
+        n_data_bits = n_data * 8
+        if n_data_bits > data_bits_needed:
+            raise ValueError(
+                f'Watermark too long: need {n_data_bits} bits '
+                f'({n_data} bytes), but capacity is {data_bits_needed} bits '
+                f'({data_bits_needed // 8} bytes). '
+                f'Use a larger image or shorter watermark text.'
+            )
+        data_bits = bytes_to_bits(data, n_data_bits)
         if len(data_bits) < data_bits_needed:
             data_bits = np.pad(data_bits, (0, data_bits_needed - len(data_bits)), 'constant')
         chunks = []
@@ -34,8 +42,16 @@ def _make_payload(data: bytes, config: WatermarkConfig, n_blocks: int) -> tuple[
             chunks.append(bch_encode(chunk))
         payload = np.concatenate(chunks)
     else:
-        used = min(avail_data_bits, n_data * 8)
-        used = min(used, 512)
+        capacity = min(avail_data_bits, 512)
+        n_data_bits = n_data * 8
+        if n_data_bits > capacity:
+            raise ValueError(
+                f'Watermark too long: need {n_data_bits} bits '
+                f'({n_data} bytes), but capacity is {capacity} bits '
+                f'({capacity // 8} bytes). '
+                f'Use a larger image or shorter watermark text.'
+            )
+        used = n_data_bits
         payload = bytes_to_bits(data, used)
 
     if config.sync_enabled:
