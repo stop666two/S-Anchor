@@ -266,7 +266,7 @@
 
 
 
-<button class="tb sm" onclick=wd() data-i=dl>DEL</button></div>
+</div>
 
 
 
@@ -290,8 +290,12 @@
 
 
 
-<input class=wi id=wt value="" placeholder="Enter watermark text" style="margin-bottom:4px;width:100%;padding:6px 8px;background:var(--b2);border:1px solid var(--d);color:var(--f0);font-family:inherit;font-size:12px;outline:none">
-<select class=sl id=wmt style="margin-bottom:2px;font-size:10px"><option value=freq>Freq</option><option value=lsb>LSB</option><option value=visible>Visible</option><option value=patchwork>Patch</option><option value=dft>DFT</option><option value=spread>Spread</option></select><button class="tb sm" onclick=awt() style=margin-bottom:4px>+ ADD</button>
+<button class="tb sm" onclick=openAddDlg() style=margin-bottom:4px>+ ADD</button>
+<div style=display:flex;gap:4px;margin-bottom:2px>
+  <select class=sl id=wmf style=font-size:10px onchange=applyFilter()><option value=>ALL</option><option value=freq>Freq</option><option value=lsb>LSB</option><option value=visible>Visible</option><option value=patchwork>Patch</option><option value=dft>DFT</option><option value=spread>Spread</option></select>
+  <button class="tb sm" onclick=wd() data-i=dl style=flex-shrink:0>DEL</button>
+</div>
+<input class=wi id=wet value="" placeholder="Edit selected watermark text" style="width:100%;padding:4px 6px;background:var(--b2);border:1px solid var(--d);color:var(--f0);font-family:inherit;font-size:11px;outline:none">
 
 
 
@@ -649,4 +653,17 @@
 
 
 
-</html>
+
+<div id=wmModal style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center">
+<div style="background:var(--b1);border:1px solid var(--d);padding:16px;width:360px;max-height:80vh;display:flex;flex-direction:column">
+<div style=display:flex;justify-content:space-between;align-items:center;margin-bottom:12px>
+  <span style=font-size:13px;letter-spacing:.1em;color:var(--f0);text-transform:uppercase>ADD WATERMARK</span>
+  <button class="tb sm" onclick=closeAddDlg() style=font-size:14px;padding:0 8px>x</button>
+</div>
+<select class=sl id=amt style="margin-bottom:8px"><option value=freq>Freq</option><option value=lsb>LSB</option><option value=visible>Visible</option><option value=patchwork>Patch</option><option value=dft>DFT</option><option value=spread>Spread</option></select>
+<input class=wi id=atext value="" placeholder="Enter watermark text" style="margin-bottom:8px;width:100%;padding:8px;background:var(--b2);border:1px solid var(--d);color:var(--f0);font-family:inherit;font-size:12px;outline:none">
+<button class="tb" onclick=addFromDlg() style=margin-bottom:8px;width:100%;padding:6px>+ ADD TO LIST</button>
+<div id=adlgList style="flex:1;overflow-y:auto;font-size:11px;color:var(--f1);border-top:1px solid var(--d);padding-top:6px"></div>
+<button class="tb a" onclick=closeAddDlg() style=margin-top:8px;width:100%;padding:8px>DONE</button>
+</div>
+</div></html>
