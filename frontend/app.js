@@ -338,7 +338,7 @@ function sf(i,v){var e=$(i);if(e&&v!==undefined)e.textContent=v;return e}
 
 
 
-function showExtract(parts){var cv=$('cv');cv.style.display='block';$('pn').style.display='none';cv.width=cv.offsetWidth;cv.height=cv.offsetHeight;if(!cv.width||!cv.height)return;var ctx=cv.getContext('2d');if(st.cd&&st.cd.el){var s=Math.min(cv.width/st.cd.w,cv.height/st.cd.h);var ox=(cv.width-st.cd.w*s)/2,oy=(cv.height-st.cd.h*s)/2;ctx.drawImage(st.cd.el,ox,oy,st.cd.w*s,st.cd.h*s)}var bh=38+18*parts.length;ctx.fillStyle='rgba(0,0,0,0.65)';ctx.fillRect(0,cv.height-bh,cv.width,bh);ctx.fillStyle='#4AF626';ctx.font='bold 14px JetBrains Mono';ctx.textAlign='left';ctx.textBaseline='top';var found=parts.filter(function(p){return p.ok}).length;ctx.fillText('>>> FOUND: '+found+'/'+parts.length,12,cv.height-bh+6);ctx.fillStyle='#fff';ctx.font='12px JetBrains Mono';parts.forEach(function(p,i){ctx.fillStyle=p.ok?'#fff':'#888';ctx.fillText('['+p.type+'] '+(p.ok?p.text:'---'),12,cv.height-bh+26+18*i)})}function m(md){st.m=md;document.querySelectorAll('.b').forEach(function(b,i){b.classList.toggle('a',i===md)});var pp=$('pp'),xr=$('xr'),rs=$('results');if(pp)pp.style.display=md===0?'':'none';if(xr)xr.style.display=md===0?'none':'';if(rs)rs.style.display=md===0?'none':'';if(md===0){if(st.cd)rw();$('cv').style.display='';$('pn').style.display='none';var rs=$('results');if(rs)rs.style.display='none'}else{$('cv').style.display='none';$('pn').style.display='none';var rs=$('results');if(rs)rs.style.display=''}lg(tk(md?'ex':'eml'))}
+function showExtract(parts){var cv=$('cv');cv.style.display='block';$('pn').style.display='none';cv.width=cv.offsetWidth;cv.height=cv.offsetHeight;if(!cv.width||!cv.height)return;var ctx=cv.getContext('2d');if(st.cd&&st.cd.el){var s=Math.min(cv.width/st.cd.w,cv.height/st.cd.h);var ox=(cv.width-st.cd.w*s)/2,oy=(cv.height-st.cd.h*s)/2;ctx.drawImage(st.cd.el,ox,oy,st.cd.w*s,st.cd.h*s)}var bh=38+18*parts.length;ctx.fillStyle='rgba(0,0,0,0.65)';ctx.fillRect(0,cv.height-bh,cv.width,bh);ctx.fillStyle='#4AF626';ctx.font='bold 14px JetBrains Mono';ctx.textAlign='left';ctx.textBaseline='top';var nFound=parts.filter(function(p){return p.ok}).length;ctx.fillText('>>> FOUND: '+nFound+'/'+parts.length,12,cv.height-bh+6);ctx.fillStyle='#fff';ctx.font='12px JetBrains Mono';var fi=0;parts.forEach(function(p,i){if(!p.ok)return;ctx.fillStyle='#fff';ctx.fillText('['+p.type+'] '+p.text,12,cv.height-bh+26+18*fi);fi++})}function m(md){st.m=md;document.querySelectorAll('.b').forEach(function(b,i){b.classList.toggle('a',i===md)});var pp=$('pp'),xr=$('xr'),rs=$('results');if(pp)pp.style.display=md===0?'':'none';if(xr)xr.style.display=md===0?'none':'';if(rs)rs.style.display=md===0?'none':'';if(md===0){if(st.cd)rw();$('cv').style.display='';$('pn').style.display='none';var rs=$('results');if(rs)rs.style.display='none'}else{$('cv').style.display='none';$('pn').style.display='none';var rs=$('results');if(rs)rs.style.display=''}lg(tk(md?'ex':'eml'))}
 
 
 
@@ -1798,7 +1798,7 @@ var parts=(d.results&&d.results.length)?d.results.map(function(r){var txt=r.text
 
 
 
-parts.forEach(function(p){if(p.ok){lg('['+p.type+'] FOUND: '+p.text,'o')}else{lg('['+p.type+'] not found')}});
+var nFound=0;parts.forEach(function(p){if(p.ok){nFound++;lg('['+p.type+'] '+p.text,'o')}});lg('Found '+nFound+'/'+parts.length+' types');
 
 
 
@@ -1850,20 +1850,19 @@ if(xl){
 
 
 
-  xl.innerHTML='';
-  parts.forEach(function(p){
+  var found=parts.filter(function(p){return p.ok});
+  xl.innerHTML='<div style=font-size:10px;color:var(--f1);padding:4px 0;border-bottom:1px solid var(--d)>FOUND '+found.length+'/'+parts.length+'</div>';
+  found.forEach(function(p){
     var d2=document.createElement('div');
     d2.style.cssText='border-bottom:1px solid var(--d);padding:6px 4px';
     var n=document.createElement('div');
-    n.style.cssText='color:'+(p.ok?'var(--g)':'var(--f1)')+';font-size:10px;text-transform:uppercase';
-    n.textContent='['+p.type+'] '+(p.ok?'FOUND':'NOT FOUND');
+    n.style.cssText='color:var(--g);font-size:10px;text-transform:uppercase';
+    n.textContent='['+p.type+']';
     d2.appendChild(n);
-    if(p.ok){
-      var t=document.createElement('div');
-      t.style.cssText='color:var(--f0);font-size:12px;word-break:break-all';
-      t.textContent=p.text;
-      d2.appendChild(t);
-    }
+    var t=document.createElement('div');
+    t.style.cssText='color:var(--f0);font-size:12px;word-break:break-all';
+    t.textContent=p.text;
+    d2.appendChild(t);
     xl.appendChild(d2);
   })}
 showExtract(parts)
