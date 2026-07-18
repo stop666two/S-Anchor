@@ -3,35 +3,30 @@
   "watermarks": [
     {
       "type": "freq",
-      "text": "STOP-1-FREQ",
-      "alpha": 0.15,
-      "delta": 36,
-      "level": 2,
-      "sync": true,
-      "bch": true
+      "text": "STOP-1-FR",
+      "sync": false,
+      "bch": false
     },
     {
       "type": "dct_block",
       "text": "STOP-2-DCT",
-      "password": "STOP666",
-      "strength": 18
+      "password": "STOP666"
     },
     {
       "type": "svd",
       "text": "STOP-3-SVD",
-      "password": "STOP666",
-      "strength": 25
+      "password": "STOP666"
     },
     {
       "type": "spread",
-      "text": "STOP-4-SPREAD",
+      "text": "STOP-4-SP",
       "strength": 25,
       "spread_factor": 64,
       "seed": 42
     },
     {
       "type": "patchwork",
-      "text": "STOP-5-PATCH",
+      "text": "STOP-5-PA",
       "strength": 25,
       "seed": 42
     },
@@ -47,12 +42,11 @@
     },
     {
       "type": "visible",
-      "text": "STOP-8-VISIBLE",
+      "text": "STOP-8-VIS",
       "x": 50,
       "y": 50,
       "font_size": 48,
-      "opacity": 0.3,
-      "rotation": 0
+      "opacity": 0.3
     }
   ]
 }
