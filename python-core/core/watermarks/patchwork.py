@@ -16,82 +16,61 @@ class PatchworkWatermark(BaseWatermark):
     def extract_order(self) -> int:
         return 30
 
-    def _patches(self, arr: NDArray, seed: int, n_patches: int, patch_size: int) -> tuple:
+    def _make_pairs(self, arr: NDArray, seed: int, n_pairs: int, ps: int) -> tuple[list, list, list]:
         rng = np.random.default_rng(seed)
         h, w = arr.shape
         coords = []
-        for _ in range(n_patches * 2):
-            x = rng.integers(0, w - patch_size)
-            y = rng.integers(0, h - patch_size)
+        for _ in range(n_pairs * 2):
+            x = rng.integers(0, w - ps)
+            y = rng.integers(0, h - ps)
             coords.append((y, x))
-        a_patches = [arr[y:y+patch_size, x:x+patch_size] for y, x in coords[:n_patches]]
-        b_patches = [arr[y:y+patch_size, x:x+patch_size] for y, x in coords[n_patches:]]
-        return a_patches, b_patches, coords
+        a_coords = coords[:n_pairs]
+        b_coords = coords[n_pairs:]
+        a_patches = [arr[y:y+ps, x:x+ps] for y, x in a_coords]
+        b_patches = [arr[y:y+ps, x:x+ps] for y, x in b_coords]
+        return a_patches, b_patches, a_coords, b_coords
 
     def embed(self, carrier: Image.Image, payload: bytes, params: dict) -> tuple[Image.Image, dict]:
         arr = np.array(carrier.convert('L'), dtype=np.float64)
         seed = params.get('seed', 42)
-        strength = params.get('strength', 1.0)
-        patch_size = 4
+        strength = params.get('strength', 5.0)
+        ps = 4
 
         length_bytes = struct.pack('>H', len(payload))
         data = length_bytes + payload
         bits = np.unpackbits(np.frombuffer(data, dtype=np.uint8))
-        n_patches = max(1, len(bits))
 
-        a_patches, b_patches, coords = self._patches(arr, seed, n_patches, patch_size)
-        if len(bits) > n_patches:
-            raise ValueError(f'Patchwork payload too large: {len(bits)} bits')
-
+        a_patches, b_patches, _, _ = self._make_pairs(arr, seed, len(bits), ps)
         for i in range(len(bits)):
-            a_mean = np.mean(a_patches[i])
-            b_mean = np.mean(b_patches[i])
-            diff = abs(a_mean - b_mean)
             if bits[i] == 1:
-                target_diff = diff + strength * 8
-                if a_mean > b_mean:
-                    a_patches[i] += target_diff / 2
-                    b_patches[i] -= target_diff / 2
-                else:
-                    a_patches[i] -= target_diff / 2
-                    b_patches[i] += target_diff / 2
+                a_patches[i] += strength
+                b_patches[i] -= strength
             else:
-                mid = (a_mean + b_mean) / 2
-                target_diff = max(0, diff - strength * 4)
-                a_patches[i] = np.clip(a_patches[i] - (a_mean - mid) * 0.5, 0, 255)
-                b_patches[i] = np.clip(b_patches[i] - (b_mean - mid) * 0.5, 0, 255)
+                a_patches[i] -= strength
+                b_patches[i] += strength
 
         result = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8), 'L').convert('RGB')
-        return result, {'bits_embedded': len(bits), 'n_patches': n_patches}
+        return result, {'bits_embedded': len(bits), 'n_pairs': len(bits)}
 
     def extract(self, stego: Image.Image, params: dict) -> tuple[bytes, dict]:
         arr = np.array(stego.convert('L'), dtype=np.float64)
         seed = params.get('seed', 42)
-        patch_size = 4
-        total_pixels = arr.size
+        ps = 4
 
-        # Need at least 16 patches for header (8 pixel pairs = 16 patches)
-        min_patches = 16
-        coord_pixels_needed = min_patches * 2 * patch_size * patch_size
-        if total_pixels < coord_pixels_needed:
-            return b'', {'bits_extracted': 0}
-
-        a_patches, b_patches, _ = self._patches(arr, seed, min_patches, patch_size)
-        header_bits = np.array([1 if np.mean(a) < np.mean(b) else 0 for a, b in zip(a_patches, b_patches)], dtype=np.uint8)
+        # Read header: first 16 pairs determine payload length
+        a_patches, b_patches, _, _ = self._make_pairs(arr, seed, 16, ps)
+        diffs = np.array([np.mean(a) - np.mean(b) for a, b in zip(a_patches, b_patches)])
+        header_bits = (diffs > 0).astype(np.uint8)
         data_len = struct.unpack('>H', np.packbits(header_bits).tobytes())[0]
         if data_len < 1 or data_len > 4096:
             return b'', {'bits_extracted': 0}
 
         n_bits = 16 + data_len * 8
-        max_patches = min(n_bits, total_pixels // (2 * patch_size * patch_size))
-        if max_patches < n_bits:
-            return b'', {'bits_extracted': 0}
-
-        a_patches, b_patches, _ = self._patches(arr, seed, n_bits, patch_size)
-        bits = np.array([1 if np.mean(a) < np.mean(b) else 0 for a, b in zip(a_patches, b_patches)], dtype=np.uint8)
-        payload_bits = bits[16:]
-        payload = np.packbits(payload_bits).tobytes()
-        return payload, {'bits_extracted': len(payload_bits)}
+        a_patches, b_patches, _, _ = self._make_pairs(arr, seed, n_bits, ps)
+        diffs = np.array([np.mean(a) - np.mean(b) for a, b in zip(a_patches, b_patches)])
+        bits = (diffs > 0).astype(np.uint8)
+        payload = np.packbits(bits[16:]).tobytes()
+        return payload, {'bits_extracted': len(bits[16:])}
 
 
 register(PatchworkWatermark())
