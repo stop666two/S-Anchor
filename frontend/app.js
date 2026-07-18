@@ -398,7 +398,7 @@ function showExtract(parts){var cv=$('cv');cv.style.display='block';$('pn').styl
 
 
 
-function awt(){var br=String.fromCharCode(10);var lines=$('wt').value.split(br).filter(function(l){return l.trim()});if(!lines.length)lines=['WM'];lines.forEach(function(l,i){var id=++wid;wm.push({id:id,ty:'t',txt:l.trim(),px:(id*7+13)%60,py:(id*9+15)%60,rt:0,fs:36,op:85,fn:st.fn,cl:st.cl})});uw();lg('+'+lines.length+' WMs');rw()}
+function awt(){var br=String.fromCharCode(10);var lines=$('wt').value.split(br).filter(function(l){return l.trim()});if(!lines.length)lines=['WM'];lines.forEach(function(l,i){var id=++wid;wm.push({id:id,ty:'t',txt:l.trim(),px:(id*7+13)%60,py:(id*9+15)%60,rt:0,fs:36,op:85,fn:st.fn,cl:st.cl})});uw();cc();lg('+'+lines.length+' WMs');rw()}
 
 
 
@@ -407,16 +407,7 @@ function awt(){var br=String.fromCharCode(10);var lines=$('wt').value.split(br).
 
 
 
-function wd(){var s=$('ws');if(!s||s.value<0)return;var id=parseInt(s.value);wm=wm.filter(function(w){return w.id!==id});s.value=-1;sel=-1;uw();rw();lg('-WM #'+id)}
-
-
-
-
-
-
-
-
-
+function wd(){var s=$('ws');if(!s||s.value<0)return;var id=parseInt(s.value);wm=wm.filter(function(w){return w.id!==id});s.value=-1;sel=-1;uw();cc();rw();lg('-WM #'+id)}
 
 
 
@@ -426,6 +417,17 @@ function wd(){var s=$('ws');if(!s||s.value<0)return;var id=parseInt(s.value);wm=
 
 
 
+
+
+
+
+
+
+
+
+
+
+function cc(){if(!st.cd){var e=$('cpd');if(e)e.textContent='MAX: -- bytes | USED: -- bytes';return}var w=st.cd.w||256,h=st.cd.h||256;fetch('http://127.0.0.1:8080/api/capacity?width='+w+'&height='+h+'&level='+st.lv+'&sync_enabled='+(st.sy?1:0)+'&bch_enabled='+(st.bc?1:0)).then(function(r){return r.json()}).then(function(d){var m=d.max_bytes||0;var txt='';if(wm.length){txt=wm.map(function(w){return w.txt}).join('|');}else{txt=$('wt').value||''}var used=txt.length;var e=$('cpd');if(e){e.textContent='MAX: '+m+' bytes | USED: '+used+' bytes';e.style.color=used>m?'var(--r)':'var(--f1)'}})}
 
 function uw(){var el=$('wi'),s=$('ws');if(!el||!s)return;sf('wc',wm.length);el.textContent=wm.length?wm.length+' watermark(s)':'No watermarks';s.innerHTML='<option value=-1>--</option>';wm.forEach(function(w){var o=document.createElement('option');o.value=w.id;o.textContent='#'+w.id+' '+w.txt.substring(0,12);s.appendChild(o)});if(sel>=0)s.value=sel}
 
@@ -1107,7 +1109,7 @@ d.ondrop=function(e){e.preventDefault();d.classList.remove('dg');if(e.dataTransf
 
 
 
-su($('cd'),function(f){var r=new FileReader();r.onload=function(e){var img=new Image();img.onload=function(){st.cd={f:f,du:e.target.result,w:img.width,h:img.height,el:img};$('cd').innerHTML='';$('cd').appendChild(img);sf('ci',f.name+'|'+img.width+'x'+img.height);$('co').src=e.target.result;$('co').style.display='';$('cp').style.display='none';rw();lg('Loaded: '+f.name)};img.src=e.target.result};r.readAsDataURL(f)})
+su($('cd'),function(f){var r=new FileReader();r.onload=function(e){var img=new Image();img.onload=function(){st.cd={f:f,du:e.target.result,w:img.width,h:img.height,el:img};$('cd').innerHTML='';$('cd').appendChild(img);sf('ci',f.name+'|'+img.width+'x'+img.height);$('co').src=e.target.result;$('co').style.display='';$('cp').style.display='none';rw();cc();lg('Loaded: '+f.name)};img.src=e.target.result};r.readAsDataURL(f)})
 
 
 
@@ -1267,7 +1269,7 @@ $('ro').oninput=function(){var v=+this.value;sf('vo',v+'%');if(sel>=0){wm.forEac
 
 
 
-$('wt').oninput=function(){var v=this.value;if(sel>=0){wm.forEach(function(w){if(w.id===sel)w.txt=v})}else{st.txt=v}rw()}
+$('wt').oninput=function(){var v=this.value;if(sel>=0){wm.forEach(function(w){if(w.id===sel)w.txt=v})}else{st.txt=v}rw();cc()}
 
 
 
@@ -1327,7 +1329,7 @@ $('rd').oninput=function(){st.de=+this.value;sf('vd',this.value)}
 
 
 
-$('rl').oninput=function(){st.lv=+this.value;sf('vl',this.value)}
+$('rl').oninput=function(){st.lv=+this.value;sf('vl',this.value);cc()}
 
 
 
@@ -1347,7 +1349,7 @@ $('rl').oninput=function(){st.lv=+this.value;sf('vl',this.value)}
 
 
 
-$('ts').onclick=function(){st.sy=!st.sy;this.classList.toggle('a');this.textContent=st.sy?'ON':'OFF'}
+$('ts').onclick=function(){st.sy=!st.sy;this.classList.toggle('a');this.textContent=st.sy?'ON':'OFF';cc()}
 
 
 
@@ -1367,7 +1369,7 @@ $('ts').onclick=function(){st.sy=!st.sy;this.classList.toggle('a');this.textCont
 
 
 
-$('tb').onclick=function(){st.bc=!st.bc;this.classList.toggle('a');this.textContent=st.bc?'ON':'OFF'}
+$('tb').onclick=function(){st.bc=!st.bc;this.classList.toggle('a');this.textContent=st.bc?'ON':'OFF';cc()}
 
 
 

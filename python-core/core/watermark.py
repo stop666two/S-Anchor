@@ -95,6 +95,24 @@ def _read_payload(all_bits: NDArray, config: WatermarkConfig) -> tuple[bytes, fl
     return bits_to_bytes(payload), corr, found
 
 
+def calc_capacity(img_w: int, img_h: int, config: WatermarkConfig) -> dict:
+    level = _auto_level(img_w, img_h, config)
+    divisor = 8 * (1 << level)
+    w = (img_w // divisor) * divisor
+    h = (img_h // divisor) * divisor
+    blocks = (w // (8 << level)) * (h // (8 << level))
+    n_sync = 64 if config.sync_enabled else 0
+    avail = blocks - n_sync
+    if avail < 8:
+        return {'level': level, 'blocks': blocks, 'max_bytes': 0, 'note': 'image too small'}
+    if config.bch_enabled:
+        n_bch = max(1, avail // CODE_LEN)
+        max_bytes = max(1, n_bch * DATA_LEN // 8)
+    else:
+        max_bytes = max(1, min(avail, 512) // 8)
+    return {'level': level, 'blocks': blocks, 'max_bytes': max_bytes}
+
+
 def _auto_level(img_w: int, img_h: int, config: WatermarkConfig) -> int:
     needed = 64 + 64
     if config.bch_enabled:

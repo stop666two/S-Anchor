@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 import uvicorn
 
 from core.config import WatermarkConfig
-from core.watermark import embed_watermark, extract_watermark
+from core.watermark import embed_watermark, extract_watermark, calc_capacity
 
 app = FastAPI(title='Watermark Core Engine', version='1.0.0')
 
@@ -115,6 +115,12 @@ def extract(req: ExtractRequest):
         sync_corr=ext_info.get('sync_corr', 0.0),
         job_id=uuid.uuid4().hex[:12],
     )
+
+
+@app.get('/api/capacity')
+def capacity(width: int = 256, height: int = 256, level: int = 2, sync_enabled: bool = True, bch_enabled: bool = True):
+    config = WatermarkConfig(level=level, sync_enabled=sync_enabled, bch_enabled=bch_enabled)
+    return calc_capacity(width, height, config)
 
 
 @app.get('/api/health')

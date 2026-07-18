@@ -169,6 +169,10 @@ func handleExtract(w http.ResponseWriter, r *http.Request) {
 	proxyToPython(w, r, "/api/extract", r.Body)
 }
 
+func handleCapacity(w http.ResponseWriter, r *http.Request) {
+	proxyToPython(w, r, "/api/capacity?"+r.URL.RawQuery, http.NoBody)
+}
+
 func handleHealth(w http.ResponseWriter, r *http.Request) {
 	workerPool.mu.Lock()
 	active := workerPool.active
@@ -249,6 +253,7 @@ func main() {
 	mux.HandleFunc("/api/embed", corsMiddleware(handleEmbed))
 	mux.HandleFunc("/api/extract", corsMiddleware(handleExtract))
 	mux.HandleFunc("/api/upload", corsMiddleware(handleUpload))
+	mux.HandleFunc("/api/capacity", corsMiddleware(handleCapacity))
 	mux.HandleFunc("/api/health", corsMiddleware(handleHealth))
 	mux.HandleFunc("/", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]string{"service": "s-anchor watermark mediator", "version": "1.0.0"})
