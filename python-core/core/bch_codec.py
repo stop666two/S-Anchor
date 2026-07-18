@@ -70,13 +70,18 @@ def decode(received: NDArray) -> NDArray:
 
     n = len(received)
     for i in range(n):
-        t = received.copy(); t[i] ^= 1
-        if _is_valid(t): return t[:DATA_LEN]
+        t = received.copy()
+        t[i] ^= 1
+        if _is_valid(t):
+            return t[:DATA_LEN]
 
     for i in range(n):
         for j in range(i + 1, n):
-            t = received.copy(); t[i] ^= 1; t[j] ^= 1
-            if _is_valid(t): return t[:DATA_LEN]
+            t = received.copy()
+            t[i] ^= 1
+            t[j] ^= 1
+            if _is_valid(t):
+                return t[:DATA_LEN]
 
     return received[:DATA_LEN]
 

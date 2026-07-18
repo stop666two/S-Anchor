@@ -1,7 +1,8 @@
 import struct
+
 import numpy as np
-from PIL import Image
 from numpy.typing import NDArray
+from PIL import Image
 
 from . import BaseWatermark, register
 
@@ -64,7 +65,7 @@ class PatchworkWatermark(BaseWatermark):
         ps = 4
 
         lefts, rights = self._split_patch(lum, seed, 16, ps)
-        diffs = np.array([np.mean(l) - np.mean(r) for l, r in zip(lefts, rights)])
+        diffs = np.array([np.mean(left) - np.mean(right) for left, right in zip(lefts, rights)])
         header_bits = (diffs > 0).astype(np.uint8)
         data_len = struct.unpack('>H', np.packbits(header_bits).tobytes())[0]
         if data_len < 1 or data_len > 4096:
@@ -72,7 +73,7 @@ class PatchworkWatermark(BaseWatermark):
 
         n_bits = 16 + data_len * 8
         lefts, rights = self._split_patch(lum, seed, n_bits, ps)
-        diffs = np.array([np.mean(l) - np.mean(r) for l, r in zip(lefts, rights)])
+        diffs = np.array([np.mean(left) - np.mean(right) for left, right in zip(lefts, rights)])
         bits = (diffs > 0).astype(np.uint8)
         payload = np.packbits(bits[16:]).tobytes()
         return payload, {'bits_extracted': len(bits[16:])}

@@ -1,6 +1,5 @@
+
 from PIL import Image, ImageDraw, ImageFont
-import io
-import os
 
 from . import BaseWatermark, register
 

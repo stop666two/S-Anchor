@@ -1,7 +1,7 @@
 from PIL import Image
 
-from .watermarks import WatermarkSpec, get, sorted_for_embed, sorted_for_extract
-from .crypto import encrypt, decrypt, is_encrypted
+from .crypto import decrypt, encrypt, is_encrypted
+from .watermarks import WatermarkSpec, get
 
 
 def run_embed(carrier: Image.Image, specs: list[WatermarkSpec]) -> tuple[Image.Image, list[dict]]:
@@ -16,7 +16,9 @@ def run_embed(carrier: Image.Image, specs: list[WatermarkSpec]) -> tuple[Image.I
         password = params.pop('password', '')
         if password:
             if spec.type not in {'lsb', 'svd', 'dct_block', 'reversible'}:
-                raise ValueError(f'{spec.type} cannot use encryption (capacity too small). Use LSB, SVD, DCT Block, or Reversible.')
+                raise ValueError(
+                    f'{spec.type} cannot use encryption (capacity too small). '
+                    'Use LSB, SVD, DCT Block, or Reversible.')
             payload = encrypt(payload, password)
         result, meta = wm.embed(result, payload, params)
         results.append({'type': spec.type, **meta})

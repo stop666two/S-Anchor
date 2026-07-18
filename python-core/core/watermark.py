@@ -2,12 +2,14 @@ from PIL import Image
 
 from .config import WatermarkConfig
 from .watermarks.freq import FreqWatermark
-from .watermarks import get
 
 _freq = FreqWatermark()
 
 
-def embed_watermark(carrier: Image.Image, watermark_data: bytes, config: WatermarkConfig | None = None) -> tuple[Image.Image, dict]:
+def embed_watermark(
+    carrier: Image.Image, watermark_data: bytes,
+    config: WatermarkConfig | None = None,
+) -> tuple[Image.Image, dict]:
     if config is None:
         config = WatermarkConfig()
     params = {

@@ -1,14 +1,16 @@
 import numpy as np
-from PIL import Image
 from numpy.typing import NDArray
+from PIL import Image
 
+from ..bch_codec import CODE_LEN, DATA_LEN, bits_to_bytes, bytes_to_bits
+from ..bch_codec import decode as bch_decode
+from ..bch_codec import encode as bch_encode
 from ..config import WatermarkConfig
-from ..dwt import get_full_coeffs, reconstruct_from_ll
 from ..dct import dct_blockwise, idct_blockwise
-from ..svd_qim import embed_bits_in_blocks, extract_bits_from_blocks
-from ..sync_pattern import generate_sync_pattern, correlate_sync
-from ..bch_codec import encode as bch_encode, decode as bch_decode, bytes_to_bits, bits_to_bytes, DATA_LEN, CODE_LEN
+from ..dwt import get_full_coeffs, reconstruct_from_ll
 from ..metrics import psnr, ssim
+from ..svd_qim import embed_bits_in_blocks, extract_bits_from_blocks
+from ..sync_pattern import correlate_sync, generate_sync_pattern
 from . import BaseWatermark, register
 
 SYNC_LEN = 64

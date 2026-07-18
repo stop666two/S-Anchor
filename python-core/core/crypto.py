@@ -1,6 +1,6 @@
-import os
 import hashlib
 import hmac
+import os
 
 MAGIC = b'EN'  # 2-byte magic marker
 

@@ -1,7 +1,8 @@
 import struct
+
 import numpy as np
-from PIL import Image
 from numpy.typing import NDArray
+from PIL import Image
 
 from . import BaseWatermark, register
 
@@ -45,7 +46,10 @@ class SpreadWatermark(BaseWatermark):
             modified[start:end] += pn * strength * bit_val
 
         result = np.clip(modified, 0, 255).reshape(h, w).astype(np.uint8)
-        result_rgb = np.array(carrier.convert('RGB'), dtype=np.float64); result_rgb[:,:,2] = result; return Image.fromarray(np.clip(result_rgb,0,255).astype(np.uint8),'RGB'), {
+        result_rgb = np.array(carrier.convert('RGB'), dtype=np.float64)
+        result_rgb[:,:,2] = result
+        result_img = Image.fromarray(np.clip(result_rgb, 0, 255).astype(np.uint8), 'RGB')
+        return result_img, {
             'bits_embedded': len(bits),
             'spread_factor': bits_per_pixel,
         }

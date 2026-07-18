@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Any
+
 from PIL import Image
-from numpy.typing import NDArray
 
 
 class WatermarkSpec:
@@ -68,4 +67,4 @@ def sorted_for_extract() -> list[BaseWatermark]:
     return sorted(_registry.values(), key=lambda x: x.extract_order())
 
 
-from . import freq, lsb, visible, patchwork, spread, dct_block, reversible, svd
+from . import dct_block, freq, lsb, patchwork, reversible, spread, svd, visible  # noqa: F401, E402

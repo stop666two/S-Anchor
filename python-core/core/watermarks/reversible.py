@@ -1,4 +1,5 @@
 import struct
+
 import numpy as np
 from PIL import Image
 
@@ -28,7 +29,7 @@ class ReversibleWatermark(BaseWatermark):
 
         max_bits = h * w - 8  # leave margin
         if len(bits) > max_bits:
-            raise ValueError(f'Reversible payload too large')
+            raise ValueError('Reversible payload too large')
 
         modified = arr.copy()
         for i in range(len(bits)):

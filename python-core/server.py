@@ -1,16 +1,17 @@
-import os
-import io
 import base64
+import io
+import os
 import uuid
-from PIL import Image
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+
 import uvicorn
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+from PIL import Image
+from pydantic import BaseModel
 
 from core.config import WatermarkConfig
-from core.watermark import embed_watermark, extract_watermark, calc_capacity
 from core.pipeline import run_embed, run_extract
+from core.watermark import calc_capacity
 from core.watermarks import WatermarkSpec, list_types
 
 app = FastAPI(title='Watermark Core Engine', version='2.0.0')

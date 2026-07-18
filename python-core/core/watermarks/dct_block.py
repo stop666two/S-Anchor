@@ -1,7 +1,8 @@
 import struct
+
 import numpy as np
-from PIL import Image
 from numpy.typing import NDArray
+from PIL import Image
 from scipy.fft import dct, idct
 
 from . import BaseWatermark, register
@@ -24,7 +25,8 @@ class DctBlockWatermark(BaseWatermark):
         return idct(idct(coeff, axis=0, norm='ortho'), axis=1, norm='ortho')
 
     def embed(self, carrier: Image.Image, payload: bytes, params: dict) -> tuple[Image.Image, dict]:
-        arr = np.array(carrier.convert('RGB'), dtype=np.float64); arr = 0.299*arr[:,:,0] + 0.587*arr[:,:,1] + 0.114*arr[:,:,2]
+        arr = np.array(carrier.convert('RGB'), dtype=np.float64)
+        arr = 0.299*arr[:,:,0] + 0.587*arr[:,:,1] + 0.114*arr[:,:,2]
         h, w = arr.shape
         strength = params.get('strength', 18.0)
         block_size = 8
@@ -68,7 +70,8 @@ class DctBlockWatermark(BaseWatermark):
         return Image.fromarray(np.clip(result_rgb, 0, 255).astype(np.uint8), 'RGB'), {'bits_embedded': n_data}
 
     def extract(self, stego: Image.Image, params: dict) -> tuple[bytes, dict]:
-        arr = np.array(stego.convert('RGB'), dtype=np.float64); arr = 0.299*arr[:,:,0] + 0.587*arr[:,:,1] + 0.114*arr[:,:,2]
+        arr = np.array(stego.convert('RGB'), dtype=np.float64)
+        arr = 0.299*arr[:,:,0] + 0.587*arr[:,:,1] + 0.114*arr[:,:,2]
         h, w = arr.shape
         strength = params.get('strength', 18.0)
         block_size = 8
