@@ -18,7 +18,7 @@
 
 
 
-var st={cd:null,rd:null,al:0.05,de:36,lv:2,sy:1,bc:1,bs:0},wm=[],wid=0,sel=-1,dr=0,lb=null;
+var st={cd:null,rd:null,al:0.05,de:36,lv:2,sy:1,bc:1,bs:0},wm=[],wid=0,sel=-1,dr=0,lb=null,_editId=-1;
 
 
 
@@ -431,10 +431,10 @@ function cc(){if(!st.cd){var e=$('cpd');if(e)e.textContent='MAX: -- bytes | USED
 
 var typeHints={'freq':'Robust frequency-domain, survives compression & cropping. ~10 bytes capacity.','lsb':'Fragile but huge capacity: embed large text. Damaged by compression/resize.','visible':'Visible text overlay with configurable opacity & position. Always on top.','patchwork':'Statistical method resistant to JPEG compression. ~8 bytes capacity.','dft':'Phase-based, survives rotation & scaling. Very robust but ~4 bytes only.','spread':'Most robust type - resists almost all attacks. Only ~2 bytes capacity.'}
 function updateTypeDesc(){var el=$('typeDesc');var amt=$('amt');if(el&&amt){el.textContent=typeHints[amt.value]||''}}
-function openAddDlg(){var m=$('wmModal');if(m)m.style.display='flex';$('atext').value='';$('atext').focus();renderDlgList();updateTypeDesc()}
+function openAddDlg(){_editId=-1;var btn=$('addBtn');if(btn)btn.textContent='+ ADD TO LIST';var m=$('wmModal');if(m)m.style.display='flex';$('atext').value='';$('atext').focus();renderDlgList();updateTypeDesc()}
 function closeAddDlg(){var m=$('wmModal');if(m)m.style.display='none';uw();rw()}
-function renderDlgList(){var el=$('adlgList');var cnt=$('adlgCount');if(cnt)cnt.textContent=wm.length;if(!el)return;el.innerHTML='';wm.forEach(function(w){var d=document.createElement('div');d.style.cssText='padding:3px 2px;border-bottom:1px solid var(--d);font-size:10px;color:var(--f0)';d.textContent='['+w.ty+'] '+w.txt.substring(0,40);el.appendChild(d)});var e=$('wc');if(e)e.textContent=wm.length}
-function addFromDlg(){var tp=$('amt').value;var txt=$('atext').value.trim();if(!txt)return;var id=++wid;wm.push({id:id,ty:tp,txt:txt,px:(id*7+13)%60,py:(id*9+15)%60,rt:0,fs:36,op:85});$('atext').value='';$('atext').focus();renderDlgList();uw();var el=$('ws');if(el)el.value=id;sel=id;rw();cc();lg('+1 ['+tp+']')}
+function renderDlgList(){var el=$('adlgList');var cnt=$('adlgCount');if(cnt)cnt.textContent=wm.length;if(!el)return;el.innerHTML='';wm.forEach(function(w){var d=document.createElement('div');d.style.cssText='padding:3px 2px;border-bottom:1px solid var(--d);font-size:10px;color:var(--f0);cursor:pointer';d.textContent='['+w.ty+'] '+w.txt.substring(0,40);d.onclick=function(){_editId=w.id;$('amt').value=w.ty;updateTypeDesc();$('atext').value=w.txt;$('atext').focus();var btn=$('addBtn');if(btn)btn.textContent='UPDATE #'+w.id};el.appendChild(d)});var e=$('wc');if(e)e.textContent=wm.length}
+function addFromDlg(){var tp=$('amt').value;var txt=$('atext').value.trim();if(!txt)return;if(_editId>=0){var eid=_editId;wm.forEach(function(w){if(w.id===eid){w.ty=tp;w.txt=txt}});_editId=-1;var btn=$('addBtn');if(btn)btn.textContent='+ ADD TO LIST';lg('updated #'+eid);renderDlgList();uw();rw();cc();return}var id=++wid;wm.push({id:id,ty:tp,txt:txt,px:(id*7+13)%60,py:(id*9+15)%60,rt:0,fs:36,op:85});$('atext').value='';$('atext').focus();renderDlgList();uw();var el=$('ws');if(el)el.value=id;sel=id;rw();cc();lg('+1 ['+tp+']')}
 function applyFilter(){uw();if(!wm.length){var e=$('wet');if(e)e.value=''}}
 
 function uw(){var el=$('wi'),s=$('ws');if(!el||!s)return;sf('wc',wm.length);el.textContent=wm.length?wm.length+' watermark(s)':'No watermarks';var wmf=$('wmf');var ft=wmf?wmf.value:'';var filtered=ft?wm.filter(function(w){return w.ty===ft}):wm;s.innerHTML='<option value=-1>--</option>';filtered.forEach(function(w){var o=document.createElement('option');o.value=w.id;o.textContent='['+w.ty+'] #'+w.id+' '+w.txt.substring(0,10);s.appendChild(o)});if(sel>=0)s.value=sel}

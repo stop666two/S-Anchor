@@ -663,7 +663,7 @@
 <select class=sl id=amt style="margin-bottom:4px" onchange=updateTypeDesc()><option value=freq>Freq - Robust, small capacity</option><option value=lsb>LSB - Fragile, huge capacity</option><option value=visible>Visible - Text overlay</option><option value=patchwork>Patchwork - JPEG resistant</option><option value=dft>DFT - Geometric attack proof</option><option value=spread>Spread Spectrum - Most robust</option></select>
 <div id=typeDesc style="font-size:9px;color:var(--f1);margin-bottom:6px;min-height:14px">Recommended for secret data that survives compression</div>
 <input class=wi id=atext value="" placeholder="Enter watermark text" style="margin-bottom:6px;width:100%;padding:8px;background:var(--b2);border:1px solid var(--d);color:var(--f0);font-family:inherit;font-size:12px;outline:none">
-<button class="tb" onclick=addFromDlg() style=margin-bottom:6px;width:100%;padding:6px>+ ADD TO LIST</button>
+<button class="tb" id=addBtn onclick=addFromDlg() style=margin-bottom:6px;width:100%;padding:6px>+ ADD TO LIST</button>
 <div id=adlgList style="flex:1;overflow-y:auto;min-height:60px;max-height:50vh;font-size:11px;color:var(--f1);border-top:1px solid var(--d);border-bottom:1px solid var(--d);padding:4px 0"></div>
 <button class="tb a" onclick=closeAddDlg() style=margin-top:6px;width:100%;padding:8px>DONE</button>
 </div>
