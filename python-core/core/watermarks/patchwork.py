@@ -33,7 +33,7 @@ class PatchworkWatermark(BaseWatermark):
         arr = np.array(carrier.convert('RGB'), dtype=np.float64)
         lum = 0.299*arr[:,:,0] + 0.587*arr[:,:,1] + 0.114*arr[:,:,2]
         seed = params.get('seed', 42)
-        strength = params.get('strength', 60.0)
+        strength = params.get('strength', 25.0)
         ps = 4  # patch half-size
 
         length_bytes = struct.pack('>H', len(payload))

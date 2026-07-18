@@ -22,7 +22,7 @@ class SpreadWatermark(BaseWatermark):
 
     def embed(self, carrier: Image.Image, payload: bytes, params: dict) -> tuple[Image.Image, dict]:
         arr = np.array(carrier.convert('RGB'), dtype=np.float64)[:,:,2]
-        strength = params.get('strength', 50.0)
+        strength = params.get('strength', 25.0)
         seed = params.get('seed', 42)
         h, w = arr.shape
         total_pixels = h * w
