@@ -2,7 +2,7 @@ import os
 import hashlib
 import hmac
 
-MAGIC = b'ENC!'  # 4-byte magic marker
+MAGIC = b'EN'  # 2-byte magic marker
 
 
 def derive_key(password: str, salt: bytes) -> bytes:
@@ -10,23 +10,22 @@ def derive_key(password: str, salt: bytes) -> bytes:
 
 
 def is_encrypted(data: bytes) -> bool:
-    """Check if data starts with the encryption magic marker."""
-    return len(data) >= 4 and data[:4] == MAGIC
+    return len(data) >= 2 and data[:2] == MAGIC
 
 
 def encrypt(plaintext: bytes, password: str) -> bytes:
     if not password:
         return plaintext
-    salt = os.urandom(16)
+    salt = os.urandom(8)
     key = derive_key(password, salt)
-    iv = os.urandom(16)
+    iv = os.urandom(8)
     prng = hashlib.sha256(iv + key).digest()
     needed = len(plaintext)
     while len(prng) < needed:
         prng += hashlib.sha256(prng[-32:] + key).digest()
     keystream = prng[:needed]
     ciphertext = bytes(a ^ b for a, b in zip(plaintext, keystream))
-    mac = hmac.new(key, iv + ciphertext, 'sha256').digest()[:8]
+    mac = hmac.new(key, iv + ciphertext, 'sha256').digest()[:4]
     return MAGIC + salt + iv + mac + ciphertext
 
 
@@ -35,9 +34,11 @@ def decrypt(data: bytes, password: str) -> bytes:
         return data
     if not is_encrypted(data):
         return data
-    salt, iv, mac, ciphertext = data[4:20], data[20:36], data[36:44], data[44:]
+    if len(data) < 22:
+        return data
+    salt, iv, mac, ciphertext = data[2:10], data[10:18], data[18:22], data[22:]
     key = derive_key(password, salt)
-    expected_mac = hmac.new(key, iv + ciphertext, 'sha256').digest()[:8]
+    expected_mac = hmac.new(key, iv + ciphertext, 'sha256').digest()[:4]
     if not hmac.compare_digest(mac, expected_mac):
         raise ValueError('Incorrect password or corrupted data')
     prng = hashlib.sha256(iv + key).digest()
