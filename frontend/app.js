@@ -90,14 +90,14 @@ sf('mp',d.psnr+' dB');sf('ms',d.ssim);sf('mb',d.bits_embedded);$('dlb').style.di
 lg(tk('dn')+' PSNR='+d.psnr+'dB','o')}
 
 async function dx(){
-var b64=await d2b(S.cd.du);
-var r=await fetch('http://127.0.0.1:8080/api/extract',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image_b64:b64,delta:S.de,level:S.lv,sync_enabled:!!S.sy,bch_enabled:!!S.bc})});
+var b64=await d2b(st.cd.du);
+var r=await fetch('http://127.0.0.1:8080/api/extract',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image_b64:b64,delta:st.de,level:st.lv,sync_enabled:!!st.sy,bch_enabled:!!st.bc})});
 if(!r.ok){var e=await r.json();throw new Error(e.error||'HTTP '+r.status)}
 var d=await r.json();
 var parts=d.watermark_text.split('|');
 lg(tk('ext')+' '+parts.length+' items:','o');
 parts.forEach(function(p,i){lg('  ['+(i+1)+'] '+p.substring(0,60))});
-var xl=G('xl');
+var xl=$('xl');
 if(xl){
   xl.innerHTML='';
   parts.forEach(function(p,i){
