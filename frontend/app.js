@@ -757,7 +757,7 @@ if(id!==undefined){ctx.save();ctx.font='bold 10px JetBrains Mono';ctx.textAlign=
 
 
 
-wm.forEach(function(w){dw(w.px,w.py,w.rt,w.fs,w.op,w.txt,w.id)})}
+wm.forEach(function(w){if(w.ty==='visible')dw(w.px,w.py,w.rt,w.fs,w.op,w.txt,w.id)})}
 
 
 
