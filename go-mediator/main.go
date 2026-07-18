@@ -116,6 +116,7 @@ var (
 
 func proxyToPython(w http.ResponseWriter, r *http.Request, path string, body io.Reader) {
 	if !rateLimiter.allow() {
+		log.Printf("rate limit exceeded for %s %s", r.Method, path)
 		writeJSON(w, http.StatusTooManyRequests, ErrorResponse{Error: "rate limit exceeded", RetryIn: 1})
 		return
 	}
@@ -126,6 +127,7 @@ func proxyToPython(w http.ResponseWriter, r *http.Request, path string, body io.
 	ctx := r.Context()
 	req, err := http.NewRequestWithContext(ctx, r.Method, pyHost+path, body)
 	if err != nil {
+		log.Printf("request creation error: %v", err)
 		jsonError(w, http.StatusInternalServerError, "internal error")
 		return
 	}
@@ -134,6 +136,7 @@ func proxyToPython(w http.ResponseWriter, r *http.Request, path string, body io.
 	client := &http.Client{Timeout: reqTimeout}
 	resp, err := client.Do(req)
 	if err != nil {
+		log.Printf("python backend error for %s: %v", path, err)
 		writeJSON(w, http.StatusGatewayTimeout, ErrorResponse{Error: "python worker timeout or unavailable"})
 		return
 	}
@@ -141,6 +144,7 @@ func proxyToPython(w http.ResponseWriter, r *http.Request, path string, body io.
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
+		log.Printf("response read error: %v", err)
 		jsonError(w, http.StatusInternalServerError, "failed to read response")
 		return
 	}
