@@ -2035,17 +2035,7 @@ if(be2){
 
 
 
-    st.bs=1;
-
-
-
-
-
-
-
-
-
-    this.disabled=1;
+    st.bs=1;this.disabled=1;sf('mst',tk('bu'));$('mst').style.color='var(--r)';$('sd').className='dot r'
 
 
 
