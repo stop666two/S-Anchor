@@ -1,7 +1,7 @@
 from PIL import Image
 
 from .watermarks import WatermarkSpec, get, sorted_for_embed, sorted_for_extract
-from .crypto import encrypt, decrypt
+from .crypto import encrypt, decrypt, is_encrypted
 
 
 def run_embed(carrier: Image.Image, specs: list[WatermarkSpec]) -> tuple[Image.Image, list[dict]]:
@@ -30,10 +30,15 @@ def run_extract(stego: Image.Image, specs: list[WatermarkSpec]) -> list[dict]:
         params = dict(spec.params or {})
         password = params.pop('password', '')
         payload, meta = wm.extract(stego, params)
-        if password:
-            try:
-                payload = decrypt(payload, password)
-            except ValueError:
+        if is_encrypted(payload):
+            if password:
+                try:
+                    payload = decrypt(payload, password)
+                except ValueError:
+                    payload = b''
+                    meta['decrypt_error'] = 'wrong password'
+            else:
+                meta['needs_password'] = True
                 payload = b''
         text = payload.decode('utf-8', errors='replace')
         results.append({'type': spec.type, 'text': text, **meta})
