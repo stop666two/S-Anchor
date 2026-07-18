@@ -21,6 +21,3 @@ def correlate_sync(received: np.ndarray, sync: np.ndarray) -> int:
             best_offset = offset
     return best_offset, best_corr
 
-
-def build_payload(sync: np.ndarray, data_bits: np.ndarray) -> np.ndarray:
-    return np.concatenate([sync, data_bits])
