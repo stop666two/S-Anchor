@@ -1571,7 +1571,7 @@ async function de(){if(!st.cd||!st.cd.f){lg('no image','e');return}var on=st.cd.
 
 
 
-var if(!txt&&!wm.length){throw new Error('no watermark text')}var wm_specs=wm.length?wm.map(function(w){var p={type:w.ty,text:w.txt};if(w.ty==='freq'){p.alpha=st.al;p.delta=st.de;p.level=st.lv;p.sync=!!st.sy;p.bch=!!st.bc}if(w.ty==='visible'){p.opacity=w.op/100;p.x=w.px;p.y=w.py;p.font_size=w.fs;p.rotation=w.rt}return p}):[{type:'freq',text:txt,alpha:st.al,delta:st.de,level:st.lv,sync:!!st.sy,bch:!!st.bc}];var r=await fetch('http://127.0.0.1:8080/api/embed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image_b64:b64,watermarks:wm_specs})})
+if(!txt&&!wm.length){throw new Error('no watermark text')}var wm_specs=wm.length?wm.map(function(w){var p={type:w.ty,text:w.txt};if(w.ty==='freq'){p.alpha=st.al;p.delta=st.de;p.level=st.lv;p.sync=!!st.sy;p.bch=!!st.bc}if(w.ty==='visible'){p.opacity=w.op/100;p.x=w.px;p.y=w.py;p.font_size=w.fs;p.rotation=w.rt}return p}):[{type:'freq',text:txt,alpha:st.al,delta:st.de,level:st.lv,sync:!!st.sy,bch:!!st.bc}];var r=await fetch('http://127.0.0.1:8080/api/embed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image_b64:b64,watermarks:wm_specs})})
 
 
 
