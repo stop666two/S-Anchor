@@ -73,7 +73,7 @@ def _read_payload(all_bits: np.ndarray, config: WatermarkConfig):
                     parts.append(dec)
             payload = np.concatenate(parts) if parts else payload
 
-    max_bytes = min(len(payload) // 8, 32)
+    max_bytes = min(len(payload) // 8, 64)
     payload = payload[:max_bytes * 8]
     return bits_to_bytes(payload), corr, found
 
