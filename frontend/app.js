@@ -58,7 +58,7 @@ var LN={zh:{},en:{},ru:{}};
 
 
 
-LN.zh={on:'\u5728\u7ebf',em:'EMBED',ex:'EXTRACT',ca:'\u8f7d\u4f53',pv:'\u9884\u89c8',pm:'\u53c2\u6570',wt:'\u6c34\u5370',dl:'\u5220\u9664',ad:'\u6dfb\u52a0',ct:'\u5185\u5bb9',rt:'\u65cb\u8f6c',sz:'\u5b57\u53f7',op:'\u900f\u660e\u5ea6',al:'ALPHA',de:'DELTA',lv:'LEVEL',sy:'SYNC',bh:'BCH',exe:'EXECUTE',cp:'\u5bf9\u6bd4',ps:'PSNR',ss:'SSIM',bi:'\u6bd4\u7279',st:'\u72b6\u6001',aw:'\u7b49\u5f85',dn:'\u5b8c\u6210',er:'\u9519\u8bef',bu:'\u8fd0\u884c\u4e2d',id:'\u5c31\u7eea',lg:'\u65e5\u5fd7',no:'\u65e0\u6587\u4ef6',nc:'\u65e0\u8f7d\u4f53',eml:'\u5d4c\u5165:',ext:'\u63d0\u53d6:',in:'\u521d\u59cb\u5316',wa:'\u7b49\u5f85\u8f93\u5165',sf:'\u627e\u5230',sn:'\u672a\u627e\u5230',sc:'\u4e0b\u8f7d',xc:'\u6267\u884c'}
+LN.zh={on:'在线',em:'嵌入',ex:'提取',ca:'载体',pv:'预览',pm:'参数',wt:'水印',dl:'删除',ad:'添加',ct:'内容',rt:'旋转',sz:'字号',op:'透明度',al:'阿尔法',de:'德尔塔',lv:'层级',sy:'同步',bh:'BCH',exe:'执行',cp:'对比',ps:'PSNR',ss:'SSIM',bi:'比特',st:'状态',aw:'等待',dn:'完成',er:'错误',bu:'运行中',id:'就绪',lg:'日志',no:'无文件',nc:'无载体',eml:'嵌入:',ext:'提取:',in:'初始化',wa:'等待输入',sf:'找到',sn:'未找到',sc:'下载',xc:'执行',_ph:{wet:'编辑水印文字',expwd:'输入加密密码',atext:'水印文字',apwd:'密码(可选)'}}
 
 
 
@@ -78,7 +78,7 @@ LN.zh={on:'\u5728\u7ebf',em:'EMBED',ex:'EXTRACT',ca:'\u8f7d\u4f53',pv:'\u9884\u8
 
 
 
-LN.en={on:'ONLINE',em:'EMBED',ex:'EXTRACT',ca:'CARRIER',pv:'PREVIEW',pm:'PARAMETERS',wt:'WATERMARK',dl:'DEL',ad:'+ADD',ct:'CONTENT',rt:'ROTATE',sz:'SIZE',op:'OPACITY',al:'ALPHA',de:'DELTA',lv:'LEVEL',sy:'SYNC',bh:'BCH',exe:'EXECUTE',cp:'COMPARISON',ps:'PSNR',ss:'SSIM',bi:'BITS',st:'STATUS',aw:'AWAITING',dn:'DONE',er:'ERROR',bu:'BUSY',id:'IDLE',lg:'LOG',no:'No file',nc:'NO CARRIER',eml:'Embed:',ext:'Extract:',in:'Ready',wa:'Waiting...',sf:'FOUND',sn:'NOT FOUND',sc:'DOWNLOAD',xc:'>>> EXECUTE <<<'}
+LN.en={on:'ONLINE',em:'嵌入',ex:'提取',ca:'CARRIER',pv:'PREVIEW',pm:'PARAMETERS',wt:'WATERMARK',dl:'DEL',ad:'+ADD',ct:'CONTENT',rt:'ROTATE',sz:'SIZE',op:'OPACITY',al:'阿尔法',de:'德尔塔',lv:'层级',sy:'同步',bh:'BCH',exe:'EXECUTE',cp:'COMPARISON',ps:'PSNR',ss:'SSIM',bi:'BITS',st:'STATUS',aw:'AWAITING',dn:'DONE',er:'ERROR',bu:'BUSY',id:'IDLE',lg:'LOG',no:'No file',nc:'NO CARRIER',eml:'Embed:',ext:'Extract:',in:'Ready',wa:'Waiting...',sf:'FOUND',sn:'NOT FOUND',sc:'DOWNLOAD',xc:'>>> EXECUTE <<<',_ph:{wet:'Edit watermark text',expwd:'Password for decryption',atext:'Watermark text',apwd:'Password (optional)'}}
 
 
 
@@ -98,7 +98,7 @@ LN.en={on:'ONLINE',em:'EMBED',ex:'EXTRACT',ca:'CARRIER',pv:'PREVIEW',pm:'PARAMET
 
 
 
-LN.ru={on:'\u0420\u0430\u0431\u043e\u0442\u0430\u0435\u0442',em:'\u0412\u0441\u0442\u0440',ex:'\u0418\u0437\u0432\u043b',ca:'\u0418\u0437\u043e\u0431\u0440',pv:'\u041f\u0440\u0435\u0434',pm:'\u041f\u0430\u0440\u0430\u043c',wt:'\u0417\u043d\u0430\u043a',dl:'\u0423\u0434\u0430\u043b',ad:'+\u0414\u043e\u0431',ct:'\u0422\u0435\u043a\u0441\u0442',rt:'\u041f\u043e\u0432\u043e\u0440',sz:'\u0420\u0430\u0437\u043c',op:'\u041f\u0440\u043e\u0437',al:'\u0410\u043b\u044c\u0444',de:'\u0414\u0435\u043b\u044c',lv:'\u0423\u0440\u043e\u0432',sy:'\u0421\u0438\u043d\u0445',bh:'BCH',exe:'\u0412\u044b\u043f\u043e\u043b',cp:'\u0421\u0440\u0430\u0432\u043d',ps:'\u041f\u0421\u041d\u0420',ss:'\u0421\u0421\u0418\u041c',bi:'\u0411\u0438\u0442',st:'\u0421\u0442\u0430\u0442',aw:'\u041e\u0436\u0438\u0434',dn:'\u0413\u043e\u0442\u043e\u0432',er:'\u041e\u0448\u0438\u0431',bu:'\u0417\u0430\u043d\u044f\u0442',id:'\u041e\u0436\u0438\u0434',lg:'\u0416\u0443\u0440\u043d',no:'\u041d\u0435\u0442',nc:'\u041d\u0435\u0442',eml:'\u0412\u0441\u0442\u0440:',ext:'\u0418\u0437\u0432\u043b:',in:'\u0413\u043e\u0442\u043e\u0432',wa:'\u041e\u0436\u0438\u0434\u0430\u043d...',sf:'\u041d\u0410\u0419\u0414\u0415\u041d',sn:'\u041d\u0415 \u041d\u0410\u0419\u0414',sc:'\u0421\u041a\u0410\u0427\u0410\u0422\u042c',xc:'>>> \u0412\u044b\u043f\u043e\u043b\u043d\u0438\u0442\u044c <<<'}
+LN.ru={on:'\u0420\u0430\u0431\u043e\u0442\u0430\u0435\u0442',em:'\u0412\u0441\u0442\u0440',ex:'\u0418\u0437\u0432\u043b',ca:'\u0418\u0437\u043e\u0431\u0440',pv:'\u041f\u0440\u0435\u0434',pm:'\u041f\u0430\u0440\u0430\u043c',wt:'\u0417\u043d\u0430\u043a',dl:'\u0423\u0434\u0430\u043b',ad:'+\u0414\u043e\u0431',ct:'\u0422\u0435\u043a\u0441\u0442',rt:'\u041f\u043e\u0432\u043e\u0440',sz:'\u0420\u0430\u0437\u043c',op:'\u041f\u0440\u043e\u0437',al:'\u0410\u043b\u044c\u0444',de:'\u0414\u0435\u043b\u044c',lv:'\u0423\u0440\u043e\u0432',sy:'\u0421\u0438\u043d\u0445',bh:'BCH',exe:'\u0412\u044b\u043f\u043e\u043b',cp:'\u0421\u0440\u0430\u0432\u043d',ps:'\u041f\u0421\u041d\u0420',ss:'\u0421\u0421\u0418\u041c',bi:'\u0411\u0438\u0442',st:'\u0421\u0442\u0430\u0442',aw:'\u041e\u0436\u0438\u0434',dn:'\u0413\u043e\u0442\u043e\u0432',er:'\u041e\u0448\u0438\u0431',bu:'\u0417\u0430\u043d\u044f\u0442',id:'\u041e\u0436\u0438\u0434',lg:'\u0416\u0443\u0440\u043d',no:'\u041d\u0435\u0442',nc:'\u041d\u0435\u0442',eml:'\u0412\u0441\u0442\u0440:',ext:'\u0418\u0437\u0432\u043b:',in:'\u0413\u043e\u0442\u043e\u0432',wa:'\u041e\u0436\u0438\u0434\u0430\u043d...',sf:'\u041d\u0410\u0419\u0414\u0415\u041d',sn:'\u041d\u0415 \u041d\u0410\u0419\u0414',sc:'\u0421\u041a\u0410\u0427\u0410\u0422\u042c',xc:'>>> \u0412\u044b\u043f\u043e\u043b\u043d\u0438\u0442\u044c <<<',_ph:{wet:'Редакт.',expwd:'Пароль',atext:'Текст',apwd:'Пароль'}}
 
 
 
@@ -158,7 +158,7 @@ function tk(k){var m=LN[cl];return(m&&m[k]!==undefined)?m[k]:(LN.en[k]||k)}
 
 
 
-function al(){document.querySelectorAll('[data-i]').forEach(function(e){e.textContent=tk(e.dataset.i)})}
+function al(){document.querySelectorAll('[data-i]').forEach(function(e){e.textContent=tk(e.dataset.i)});var ph={'wet':'Edit selected watermark text','expwd':'Enter password used during embedding','atext':'Enter watermark text','apwd':'Password (optional)'};var l=LN[cl];if(l&&l._ph){ph=l._ph}Object.keys(ph).forEach(function(k){var el=$(k);if(el)el.placeholder=ph[k]})}
 
 
 
