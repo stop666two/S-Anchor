@@ -1,4 +1,4 @@
-import urllib.request, sys
+import urllib.request, sys, time
 
 services = [
     ('Go', 'http://127.0.0.1:8080/api/health'),
@@ -8,14 +8,18 @@ services = [
 
 all_ok = True
 for name, url in services:
-    try:
-        r = urllib.request.urlopen(url, timeout=3)
-        status = r.status
-        if status == 200:
-            print(f'       {name}:        OK')
-        else:
-            print(f'       {name}:        HTTP {status}')
-    except Exception:
+    ok = False
+    for attempt in range(3):
+        try:
+            r = urllib.request.urlopen(url, timeout=3)
+            if r.status == 200:
+                print(f'       {name}:        OK')
+                ok = True
+                break
+        except Exception:
+            if attempt < 2:
+                time.sleep(2)
+    if not ok:
         print(f'       {name}:        OFFLINE')
         all_ok = False
 
