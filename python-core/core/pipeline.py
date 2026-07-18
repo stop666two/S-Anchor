@@ -15,6 +15,8 @@ def run_embed(carrier: Image.Image, specs: list[WatermarkSpec]) -> tuple[Image.I
         params = dict(spec.params or {})
         password = params.pop('password', '')
         if password:
+            if spec.type not in {'lsb', 'svd', 'dct_block', 'reversible'}:
+                raise ValueError(f'{spec.type} cannot use encryption (capacity too small). Use LSB, SVD, DCT Block, or Reversible.')
             payload = encrypt(payload, password)
         result, meta = wm.embed(result, payload, params)
         results.append({'type': spec.type, **meta})
