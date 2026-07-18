@@ -295,6 +295,9 @@
   <select class=sl id=wmf style=font-size:10px onchange=applyFilter()><option value=>ALL</option><option value=freq>Freq</option><option value=lsb>LSB</option><option value=visible>Visible</option><option value=patchwork>Patch</option><option value=svd>SVD</option><option value=spread>Spread</option><option value=dct_block>DCT Block</option><option value=reversible>Rev</option></select>
   <button class="tb sm" onclick=wd() data-i=dl style=flex-shrink:0>DEL</button>
   <button class="tb sm" onclick=clearAll() style=flex-shrink:0;color:var(--r)>x</button>
+  <button class="tb sm" onclick=exportCfg() style=font-size:9px;padding:2px 4px>EX</button>
+  <button class="tb sm" onclick=importCfg() style=font-size:9px;padding:2px 4px>IM</button>
+  <input type=file id=cfgFile accept=".json" style=display:none onchange=loadCfg(this)>
 </div>
 <input class=wi id=wet value="" placeholder="Edit selected watermark text" style="width:100%;padding:4px 6px;background:var(--b2);border:1px solid var(--d);color:var(--f0);font-family:inherit;font-size:11px;outline:none">
 
