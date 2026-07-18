@@ -427,7 +427,7 @@ function wd(){var s=$('ws');if(!s||s.value<0)return;var id=parseInt(s.value);wm=
 
 
 
-function cc(){if(!st.cd){var e=$('cpd');if(e)e.textContent='MAX: -- bytes | USED: -- bytes';return}var w=st.cd.w||256,h=st.cd.h||256;fetch('http://127.0.0.1:8080/api/capacity?width='+w+'&height='+h+'&level='+st.lv+'&sync_enabled='+(st.sy?1:0)+'&bch_enabled='+(st.bc?1:0)).then(function(r){return r.json()}).then(function(d){var m=d.max_bytes||0;var txt='';if(wm.length){txt=wm.map(function(w){return w.txt}).join('|');}else{var wet=$('wet');txt=wet?wet.value:''}var used=txt.length;var e=$('cpd');if(e){e.textContent='MAX: '+m+' bytes | USED: '+used+' bytes';e.style.color=used>m?'var(--r)':'var(--f1)'}}).catch(function(){var e=$('cpd');if(e){e.textContent='MAX: -- | SERVER OFFLINE';e.style.color='var(--r)'}})}
+function cc(){if(!st.cd){var e=$('cpd');if(e)e.textContent='MAX: -- bytes | USED: -- bytes';return}var w=st.cd.w||256,h=st.cd.h||256;fetch('http://127.0.0.1:8080/api/capacity?width='+w+'&height='+h+'&level='+st.lv+'&sync_enabled='+(st.sy?1:0)+'&bch_enabled='+(st.bc?1:0)).then(function(r){return r.json()}).then(function(d){var m=d.max_bytes||0;var txt='';if(wm.length){txt=wm.map(function(w){return w.txt}).join('|');}else{var wet=$('wet');txt=wet?wet.value:''}var used=txt.length;var e=$('cpd');if(e){e.textContent='MAX: '+m+' bytes | USED: '+used+' bytes';e.style.color=used>m?'var(--r)':'var(--f1)'}}).catch(function(){var e=$('cpd');if(e){e.textContent='SERVER OFFLINE - start Go & Python';e.style.color='var(--r)'}})}
 
 var typeHints={'freq':'Robust frequency-domain, survives compression & cropping. ~10 bytes capacity.','lsb':'Fragile but huge capacity: embed large text. Damaged by compression/resize.','visible':'Visible text overlay with configurable opacity & position. Always on top.','patchwork':'Statistical method resistant to JPEG compression. ~8 bytes capacity.','svd':'SVD singular value modulation. Robust against common attacks. Good balance.','spread':'Most robust type - resists almost all attacks. Only ~2 bytes capacity.','dct_block':'JPEG-robust DCT mid-band modulation. Good balance of capacity & robustness.','reversible':'Lossless reversible watermark. Original image can be fully restored.'}
 var encryptOk={'lsb':1,'svd':1,'dct_block':1,'reversible':1}
@@ -1601,7 +1601,7 @@ if(!txt){if(!wm.length){throw new Error('add a watermark first (click + ADD or t
 
 
 
-if(!r.ok){var e=await r.json();throw new Error(e.error||'HTTP '+r.status)}var d=await r.json();st.rd=d;if(d.results){d.results.forEach(function(r){lg('['+r.type+'] embedded','o')})}
+if(!r.ok){try{var e=await r.json();throw new Error(e.error||'HTTP '+r.status)}catch(_){throw new Error('server error '+r.status)}}var d=await r.json();st.rd=d;if(d.results){d.results.forEach(function(r){lg('['+r.type+'] embedded','o')})}
 
 
 
@@ -1760,7 +1760,7 @@ var extPwd=$('expwd')?$('expwd').value:'';var wm_specs=wm.length?wm.map(function
 
 
 
-if(!r.ok){var e=await r.json();throw new Error(e.error||'HTTP '+r.status)}
+if(!r.ok){try{var e=await r.json();throw new Error(e.error||'HTTP '+r.status)}catch(_){throw new Error('server error')}}
 
 
 
