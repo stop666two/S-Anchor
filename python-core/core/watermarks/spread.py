@@ -1,3 +1,4 @@
+import struct
 import numpy as np
 from PIL import Image
 from numpy.typing import NDArray
@@ -26,7 +27,9 @@ class SpreadWatermark(BaseWatermark):
         h, w = arr.shape
         total_pixels = h * w
 
-        bits = np.unpackbits(np.frombuffer(payload, dtype=np.uint8))
+        length_bytes = struct.pack('>H', len(payload))
+        data = length_bytes + payload
+        bits = np.unpackbits(np.frombuffer(data, dtype=np.uint8))
         bits_per_pixel = max(1, params.get('spread_factor', 64))
         needed_pixels = len(bits) * bits_per_pixel
         if needed_pixels > total_pixels:
@@ -51,23 +54,42 @@ class SpreadWatermark(BaseWatermark):
         arr = np.array(stego.convert('L'), dtype=np.float64)
         h, w = arr.shape
         seed = params.get('seed', 42)
-        n_bits = params.get('n_bits', 0)
         bits_per_pixel = params.get('spread_factor', 64)
-        if n_bits == 0:
-            return b'', {}
-
         flat = arr.reshape(-1)
-        bits = np.zeros(n_bits, dtype=np.uint8)
-        for i in range(n_bits):
+        total_pixels = len(flat)
+
+        # Read 16-bit length: need 16 * bits_per_pixel pixels
+        header_pixels = 16 * bits_per_pixel
+        if header_pixels > total_pixels:
+            return b'', {'bits_extracted': 0}
+
+        header_bits = np.zeros(16, dtype=np.uint8)
+        for i in range(16):
             start = i * bits_per_pixel
-            end = min(start + bits_per_pixel, len(flat))
+            end = min(start + bits_per_pixel, total_pixels)
             seg = flat[start:end]
             pn = self._pn_seq(seed + i, end - start)
             corr = np.dot(seg - np.mean(seg), pn)
-            bits[i] = 1 if corr > 0 else 0
+            header_bits[i] = 1 if corr > 0 else 0
 
-        payload = np.packbits(bits).tobytes().rstrip(b'\x00')
-        return payload, {'bits_extracted': n_bits}
+        data_len = struct.unpack('>H', np.packbits(header_bits).tobytes())[0]
+        if data_len < 1 or data_len > 4096:
+            return b'', {'bits_extracted': 0}
+
+        n_bits = 16 + data_len * 8
+        bits = np.zeros(n_bits - 16, dtype=np.uint8)
+        for i in range(16, n_bits):
+            start = i * bits_per_pixel
+            end = min(start + bits_per_pixel, total_pixels)
+            if end - start < 1:
+                break
+            seg = flat[start:end]
+            pn = self._pn_seq(seed + i, end - start)
+            corr = np.dot(seg - np.mean(seg), pn)
+            bits[i - 16] = 1 if corr > 0 else 0
+
+        payload = np.packbits(bits).tobytes()
+        return payload, {'bits_extracted': len(bits)}
 
 
 register(SpreadWatermark())
