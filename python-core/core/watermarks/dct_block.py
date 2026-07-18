@@ -52,15 +52,20 @@ class DctBlockWatermark(BaseWatermark):
                 mid = float(dct_block[4, 1])  # mid-frequency coefficient
                 q = int(round(mid / strength))
                 if bi < len(bits):
-                    target = float((q // 2) * 2 * strength + (int(bits[bi]) * strength))
+                    target = float((int(q / 2) * 2) * strength + (int(bits[bi]) * strength))
                 else:
                     target = float(q * strength)
                 dct_block[4, 1] = target
                 modified[by*block_size:(by+1)*block_size, bx*block_size:(bx+1)*block_size] = self._idct_2d(dct_block)
                 bi += 1
 
-        result = np.clip(modified, 0, 255).astype(np.uint8)
-        result_rgb = np.array(carrier.convert('RGB'), dtype=np.float64); y = 0.299*result_rgb[:,:,0]+0.587*result_rgb[:,:,1]+0.114*result_rgb[:,:,2]; dy = result - y; result_rgb += np.stack([dy*0.299, dy*0.587, dy*0.114], axis=2); return Image.fromarray(np.clip(result_rgb,0,255).astype(np.uint8),'RGB'), {'bits_embedded': n_data}
+        result_clipped = np.clip(modified, 0, 255)
+        result_rgb = np.array(carrier.convert('RGB'), dtype=np.float64)
+        y = 0.299*result_rgb[:,:,0] + 0.587*result_rgb[:,:,1] + 0.114*result_rgb[:,:,2]
+        dy = result_clipped - y
+        for c in range(3):
+            result_rgb[:,:,c] += dy
+        return Image.fromarray(np.clip(result_rgb, 0, 255).astype(np.uint8), 'RGB'), {'bits_embedded': n_data}
 
     def extract(self, stego: Image.Image, params: dict) -> tuple[bytes, dict]:
         arr = np.array(stego.convert('RGB'), dtype=np.float64); arr = 0.299*arr[:,:,0] + 0.587*arr[:,:,1] + 0.114*arr[:,:,2]

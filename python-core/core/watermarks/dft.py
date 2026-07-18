@@ -26,34 +26,32 @@ class DftWatermark(BaseWatermark):
     def embed(self, carrier: Image.Image, payload: bytes, params: dict) -> tuple[Image.Image, dict]:
         rgb = np.array(carrier.convert('RGB'), dtype=np.float64)
         arr = rgb[:,:,1].copy()
-        strength = params.get('strength', 15.0)
         r_min = params.get('r_min', 0.15)
         r_max = params.get('r_max', 0.35)
 
         length_bytes = struct.pack('>H', len(payload))
         data = length_bytes + payload
 
-        orig_fft = fft2(arr)
         h, w = arr.shape
-
         bits = np.unpackbits(np.frombuffer(data, dtype=np.uint8))
         mask = self._mid_ring(h, w, r_min * min(h, w) / 2, r_max * min(h, w) / 2)
         positions = np.argwhere(mask)
         if len(bits) > len(positions):
             raise ValueError(f'DFT payload too large: {len(bits)} bits, max {len(positions)}')
 
-        # Embed by modifying DFT phase by ±strength degrees
-        mod_fft = orig_fft.copy()
-        phase = np.angle(mod_fft)
+        # Embed by modifying DFT phase
+        fft = fft2(arr)
+        phase = np.angle(fft)
+        mag = np.abs(fft)
         for i in range(len(bits)):
             y, x = positions[i]
             phase[y, x] = np.pi / 2 if bits[i] == 1 else -np.pi / 2
 
-        # Use delta-only approach to minimize clipping
-        mod_fft = np.abs(orig_fft) * np.exp(1j * phase)
-        delta_img = np.real(ifft2(mod_fft - orig_fft))
-        arr_modified = arr + delta_img * strength / 15.0
-        rgb[:,:,1] = np.clip(arr_modified, 0, 255)
+        fft_mod = mag * np.exp(1j * phase)
+        # Use delta approach: compute the difference in pixel domain and add back
+        recon = np.real(ifft2(fft_mod))
+        delta = recon - arr
+        rgb[:,:,1] += delta * 0.5  # scale down to reduce clipping artifacts
         return Image.fromarray(np.clip(rgb, 0, 255).astype(np.uint8), 'RGB'), {'bits_embedded': len(bits)}
 
     def extract(self, stego: Image.Image, params: dict) -> tuple[bytes, dict]:
@@ -66,11 +64,10 @@ class DftWatermark(BaseWatermark):
         phase = np.angle(fft)
         mask = self._mid_ring(h, w, r_min * min(h, w) / 2, r_max * min(h, w) / 2)
         positions = np.argwhere(mask)
-
         if len(positions) < 16:
             return b'', {'bits_extracted': 0}
 
-        # Read 16-bit length header
+        # Read 16-bit header
         header_bits = np.zeros(16, dtype=np.uint8)
         for i in range(16):
             y, x = positions[i]
@@ -79,7 +76,7 @@ class DftWatermark(BaseWatermark):
         if data_len < 1 or data_len > 4096:
             return b'', {'bits_extracted': 0}
 
-        n_bits = (16 + data_len * 8)
+        n_bits = 16 + data_len * 8
         n_bits = min(n_bits, len(positions))
         bits = np.zeros(n_bits - 16, dtype=np.uint8)
         for i in range(16, n_bits):
