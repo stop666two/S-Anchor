@@ -1651,7 +1651,7 @@ $('cw').style.setProperty('--s','50%');$('cdi').style.left='50%';$('cdh').style.
 
 
 
-var fr=d.results&&d.results[0]||{};sf('mp',(fr.psnr||'--')+' dB');sf('ms',fr.ssim||'--');sf('mb',fr.bits_embedded||'--');$('dlb').style.display='inline-block';$('dlb').dataset.b64=d.image_b64;var di=document.getElementById('dlname');if(di)di.style.display=''
+var fr=d.results&&d.results.filter(function(r){return r.psnr!=null})[0]||{};sf('mp',(fr.psnr||'--')+' dB');sf('ms',fr.ssim||'--');sf('mb',fr.bits_embedded||'--');$('dlb').style.display='inline-block';$('dlb').dataset.b64=d.image_b64;var di=document.getElementById('dlname');if(di)di.style.display=''
 
 
 
