@@ -109,8 +109,10 @@ class FreqWatermark(BaseWatermark):
 
         max_bytes = min(len(payload) // 8, 64)
         raw = bits_to_bytes(payload[:max_bytes * 8])
-        raw = raw.rstrip(b'\x00')
-        # Strip non-printable trailing bytes (BCH padding artifacts)
+        # Strip null bytes and BCH padding artifacts
+        null_pos = raw.find(b'\x00')
+        if null_pos >= 0:
+            raw = raw[:null_pos]
         while raw and raw[-1] < 32 and raw[-1] not in (9, 10, 13):
             raw = raw[:-1]
         return raw, corr, found
