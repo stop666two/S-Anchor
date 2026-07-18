@@ -49,12 +49,12 @@ class DctBlockWatermark(BaseWatermark):
                     break
                 block = arr[by*block_size:(by+1)*block_size, bx*block_size:(bx+1)*block_size]
                 dct_block = self._dct_2d(block)
-                mid = dct_block[4, 1]  # mid-frequency coefficient
-                q = round(mid / strength)
+                mid = float(dct_block[4, 1])  # mid-frequency coefficient
+                q = int(round(mid / strength))
                 if bi < len(bits):
-                    target = (q // 2) * 2 * strength + (bits[bi] * strength)
+                    target = float((q // 2) * 2 * strength + (int(bits[bi]) * strength))
                 else:
-                    target = q * strength
+                    target = float(q * strength)
                 dct_block[4, 1] = target
                 modified[by*block_size:(by+1)*block_size, bx*block_size:(bx+1)*block_size] = self._idct_2d(dct_block)
                 bi += 1
