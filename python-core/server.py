@@ -35,6 +35,7 @@ class WatermarkSpecModel(BaseModel):
     r_min: float | None = None
     r_max: float | None = None
     n_bits: int | None = None
+    password: str | None = None
 
 
 class EmbedRequest(BaseModel):
