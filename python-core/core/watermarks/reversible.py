@@ -33,9 +33,9 @@ class ReversibleWatermark(BaseWatermark):
         modified = arr.copy()
         for i in range(len(bits)):
             y, x = divmod(i, w)
-            orig_lsb = int(modified[y, x, 0]) & 1
-            modified[y, x, 0] = (modified[y, x, 0] & 0xFE) | bits[i]
-            modified[y, x, 1] = (modified[y, x, 1] & 0xFE) | orig_lsb
+            orig_bit1 = (int(modified[y, x, 0]) >> 1) & 1
+            modified[y, x, 0] = (modified[y, x, 0] & 0xFD) | (bits[i] << 1)
+            modified[y, x, 1] = (modified[y, x, 1] & 0xFD) | (orig_bit1 << 1)
 
         return Image.fromarray(modified, 'RGB'), {'bits_embedded': len(bits)}
 
@@ -46,7 +46,7 @@ class ReversibleWatermark(BaseWatermark):
         bits = []
         for i in range(min(h * w, 2048)):  # limit scan
             y, x = divmod(i, w)
-            bits.append(arr[y, x, 0] & 1)
+            bits.append((arr[y, x, 0] >> 1) & 1)
 
             if len(bits) == 8:
                 magic = np.packbits(np.array(bits[:8], dtype=np.uint8)).tobytes()[0]
