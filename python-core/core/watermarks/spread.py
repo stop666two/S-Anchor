@@ -21,7 +21,7 @@ class SpreadWatermark(BaseWatermark):
         return rng.choice([-1, 1], size=length)
 
     def embed(self, carrier: Image.Image, payload: bytes, params: dict) -> tuple[Image.Image, dict]:
-        arr = np.array(carrier.convert('L'), dtype=np.float64)
+        arr = np.array(carrier.convert('RGB'), dtype=np.float64)[:,:,2]
         strength = params.get('strength', 6.0)
         seed = params.get('seed', 42)
         h, w = arr.shape
@@ -45,13 +45,13 @@ class SpreadWatermark(BaseWatermark):
             modified[start:end] += pn * strength * bit_val
 
         result = np.clip(modified, 0, 255).reshape(h, w).astype(np.uint8)
-        return Image.fromarray(result, 'L').convert('RGB'), {
+        result_rgb = np.array(carrier.convert('RGB'), dtype=np.float64); result_rgb[:,:,2] = result; return Image.fromarray(np.clip(result_rgb,0,255).astype(np.uint8),'RGB'), {
             'bits_embedded': len(bits),
             'spread_factor': bits_per_pixel,
         }
 
     def extract(self, stego: Image.Image, params: dict) -> tuple[bytes, dict]:
-        arr = np.array(stego.convert('L'), dtype=np.float64)
+        arr = np.array(stego.convert('RGB'), dtype=np.float64)[:,:,2]
         h, w = arr.shape
         seed = params.get('seed', 42)
         bits_per_pixel = params.get('spread_factor', 64)

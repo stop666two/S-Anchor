@@ -31,7 +31,8 @@ class PatchworkWatermark(BaseWatermark):
         return a_patches, b_patches, a_coords, b_coords
 
     def embed(self, carrier: Image.Image, payload: bytes, params: dict) -> tuple[Image.Image, dict]:
-        arr = np.array(carrier.convert('L'), dtype=np.float64)
+        arr = np.array(carrier.convert('RGB'), dtype=np.float64)
+        arr = 0.299*arr[:,:,0] + 0.587*arr[:,:,1] + 0.114*arr[:,:,2]
         seed = params.get('seed', 42)
         strength = params.get('strength', 5.0)
         ps = 4

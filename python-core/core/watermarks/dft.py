@@ -24,7 +24,7 @@ class DftWatermark(BaseWatermark):
         return (r >= r_min) & (r <= r_max)
 
     def embed(self, carrier: Image.Image, payload: bytes, params: dict) -> tuple[Image.Image, dict]:
-        arr = np.array(carrier.convert('L'), dtype=np.float64)
+        arr = np.array(carrier.convert('RGB'), dtype=np.float64)[:,:,1]
         strength = params.get('strength', 8.0)
         r_min = params.get('r_min', 0.15)
         r_max = params.get('r_max', 0.35)
@@ -53,10 +53,10 @@ class DftWatermark(BaseWatermark):
 
         fft_modified = mag * np.exp(1j * phase)
         result = np.real(ifft2(fft_modified)).clip(0, 255).astype(np.uint8)
-        return Image.fromarray(result, 'L').convert('RGB'), {'bits_embedded': len(bits)}
+        result_rgb = np.array(carrier.convert('RGB'), dtype=np.float64); result_rgb[:,:,1] = result; return Image.fromarray(np.clip(result_rgb,0,255).astype(np.uint8),'RGB'), {'bits_embedded': len(bits)}
 
     def extract(self, stego: Image.Image, params: dict) -> tuple[bytes, dict]:
-        arr = np.array(stego.convert('L'), dtype=np.float64)
+        arr = np.array(stego.convert('RGB'), dtype=np.float64)[:,:,1]
         h, w = arr.shape
         r_min = params.get('r_min', 0.15)
         r_max = params.get('r_max', 0.35)
