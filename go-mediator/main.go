@@ -116,10 +116,7 @@ var (
 
 func proxyToPython(w http.ResponseWriter, r *http.Request, path string, body io.Reader) {
 	if !rateLimiter.allow() {
-		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Retry-After", "1")
-		w.WriteHeader(http.StatusTooManyRequests)
-		json.NewEncoder(w).Encode(ErrorResponse{Error: "rate limit exceeded", RetryIn: 1})
+		writeJSON(w, http.StatusTooManyRequests, ErrorResponse{Error: "rate limit exceeded", RetryIn: 1})
 		return
 	}
 
@@ -137,23 +134,23 @@ func proxyToPython(w http.ResponseWriter, r *http.Request, path string, body io.
 	client := &http.Client{Timeout: reqTimeout}
 	resp, err := client.Do(req)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusGatewayTimeout)
-		json.NewEncoder(w).Encode(ErrorResponse{Error: "python worker timeout or unavailable"})
+		writeJSON(w, http.StatusGatewayTimeout, ErrorResponse{Error: "python worker timeout or unavailable"})
 		return
 	}
 	defer resp.Body.Close()
 
-	respBody, _ := io.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		jsonError(w, http.StatusInternalServerError, "failed to read response")
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(resp.StatusCode)
 	w.Write(respBody)
 }
 
 func jsonError(w http.ResponseWriter, code int, msg string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(ErrorResponse{Error: msg})
+	writeJSON(w, code, ErrorResponse{Error: msg})
 }
 
 func handleEmbed(w http.ResponseWriter, r *http.Request) {
@@ -173,12 +170,11 @@ func handleExtract(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleHealth(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	workerPool.mu.Lock()
 	active := workerPool.active
 	cap := workerPool.capacity
 	workerPool.mu.Unlock()
-	json.NewEncoder(w).Encode(map[string]string{
+	writeJSON(w, http.StatusOK, map[string]string{
 		"status":  "ok",
 		"workers": fmt.Sprintf("%d/%d", active, cap),
 	})
@@ -190,7 +186,10 @@ func handleUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.ParseMultipartForm(32 << 20)
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
+		jsonError(w, http.StatusBadRequest, "invalid multipart form")
+		return
+	}
 	file, _, err := r.FormFile("image")
 	if err != nil {
 		jsonError(w, http.StatusBadRequest, "no image file")
@@ -198,7 +197,11 @@ func handleUpload(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	imgData, _ := io.ReadAll(file)
+	imgData, err := io.ReadAll(file)
+	if err != nil {
+		jsonError(w, http.StatusInternalServerError, "failed to read image")
+		return
+	}
 	b64 := base64.StdEncoding.EncodeToString(imgData)
 
 	alpha := 0.05
@@ -216,7 +219,11 @@ func handleUpload(w http.ResponseWriter, r *http.Request) {
 		BchEnabled:    true,
 	}
 
-	body, _ := json.Marshal(embedReq)
+	body, err := json.Marshal(embedReq)
+	if err != nil {
+		jsonError(w, http.StatusInternalServerError, "failed to marshal request")
+		return
+	}
 	proxyToPython(w, r, "/api/embed", jsonBody(body))
 }
 
@@ -229,6 +236,14 @@ func jsonBody(data []byte) io.Reader {
 	return r
 }
 
+func writeJSON(w http.ResponseWriter, status int, v interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	if err := json.NewEncoder(w).Encode(v); err != nil {
+		log.Printf("json encode error: %v", err)
+	}
+}
+
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/embed", corsMiddleware(handleEmbed))
@@ -236,8 +251,7 @@ func main() {
 	mux.HandleFunc("/api/upload", corsMiddleware(handleUpload))
 	mux.HandleFunc("/api/health", corsMiddleware(handleHealth))
 	mux.HandleFunc("/", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"service":"s-anchor watermark mediator","version":"1.0.0"}`))
+		writeJSON(w, http.StatusOK, map[string]string{"service": "s-anchor watermark mediator", "version": "1.0.0"})
 	}))
 
 	port := os.Getenv("MEDIATOR_PORT")
