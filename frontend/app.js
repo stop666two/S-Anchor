@@ -1,4 +1,4 @@
-﻿// STATE
+﻿
 
 
 
@@ -178,7 +178,7 @@ function al(){document.querySelectorAll('[data-i]').forEach(function(e){e.textCo
 
 
 
-function sl(l){if(!LN[l])return;cl=l;al();document.querySelectorAll('.l').forEach(function(b){b.classList.toggle('a',b.dataset.l===l)});try{localStorage.setItem('sl',l)}catch(e){}}
+function sl(l){if(!LN[l])return;cl=l;al();document.querySelectorAll('.l').forEach(function(b){b.classList.toggle('a',b.dataset.l===l)});try{localStorage.setItem('sl',l)}catch(e){console.warn('localStorage write failed:',e)}}
 
 
 
@@ -198,7 +198,7 @@ function sl(l){if(!LN[l])return;cl=l;al();document.querySelectorAll('.l').forEac
 
 
 
-(function(){var s;try{s=localStorage.getItem('sl')}catch(e){}var n=navigator.language||'';sl(s||(n[0]+n[1]==='zh'?'zh':n[0]+n[1]==='ru'?'ru':'en'))})();
+(function(){var s;try{s=localStorage.getItem('sl')}catch(e){console.warn('localStorage read failed:',e)}var n=navigator.language||'';sl(s||(n[0]+n[1]==='zh'?'zh':n[0]+n[1]==='ru'?'ru':'en'))})();
 
 
 
@@ -318,7 +318,7 @@ function sf(i,v){var e=$(i);if(e&&v!==undefined)e.textContent=v;return e}
 
 
 
-// MODE
+
 
 
 
@@ -378,7 +378,7 @@ function showExtract(parts){var cv=$('cv');cv.style.display='block';$('pn').styl
 
 
 
-// WATERMARKS
+
 
 
 
@@ -497,7 +497,7 @@ function ws(){var s=$('ws');if(!s)return;var id=parseInt(s.value);sel=id;if(id<0
 
 
 
-// RENDER PREVIEW
+
 
 
 
@@ -617,7 +617,7 @@ ctx.drawImage(st.cd.el,ox,oy,st.cd.w*s,st.cd.h*s)
 
 
 
-// Draw each watermark
+
 
 
 
@@ -677,7 +677,7 @@ ctx.font='bold '+Math.round(fs*Math.min(st.cd.w,st.cd.h)*s/512)+'px Inter,sans-s
 
 
 
-// Draw ID tag
+
 
 
 
@@ -717,7 +717,6 @@ if(id!==undefined){ctx.save();ctx.font='bold 10px JetBrains Mono';ctx.textAlign=
 
 
 
-// Draw ALL watermarks
 
 
 
@@ -737,7 +736,8 @@ if(id!==undefined){ctx.save();ctx.font='bold 10px JetBrains Mono';ctx.textAlign=
 
 
 
-// Watermarks drawn via wm.forEach below
+
+
 
 
 
@@ -797,7 +797,7 @@ wm.forEach(function(w){if(w.ty==='visible')dw(w.px,w.py,w.rt,w.fs,w.op,w.txt,w.i
 
 
 
-// DRAG - move selected watermark
+
 
 
 
@@ -1037,7 +1037,7 @@ document.addEventListener('mousemove',om);document.addEventListener('mouseup',ou
 
 
 
-// UPLOAD
+
 
 
 
@@ -1157,7 +1157,7 @@ su($('cd'),function(f){var r=new FileReader();r.onload=function(e){var img=new I
 
 
 
-// SLIDERS
+
 
 
 
@@ -1438,7 +1438,7 @@ window.onresize=function(){rw()}
 
 
 
-// COMPARISON SLIDER
+
 
 
 
@@ -1518,7 +1518,7 @@ function us(e){var r=_cmp.getBoundingClientRect(),p=Math.max(0,Math.min(1,(e.cli
 
 
 
-// EXECUTE
+
 
 
 
@@ -1893,7 +1893,7 @@ showExtract(parts)
 
 
 
-// Also populate the center results panel
+
 
 var rs=$('results');if(rs&&$('xl')){rs.innerHTML=$('xl').innerHTML}async function d2b(u){var r=await fetch(u),b=await r.blob();return new Promise(function(r){var f=new FileReader();f.onloadend=function(){r(f.result.split(',')[1])};f.readAsDataURL(b)})}
 
