@@ -1746,7 +1746,7 @@ var b64=await d2b(st.cd.du);
 
 
 
-var wm_specs=wm.length?wm.map(function(w){var p={type:w.ty};if(w.pwd)p.password=w.pwd;if(w.ty==='freq'){p.delta=st.de;p.level=st.lv;p.sync=!!st.sy;p.bch=!!st.bc}return p}):[{type:'freq',delta:st.de,level:st.lv,sync:!!st.sy,bch:!!st.bc}];var r=await fetch('http://127.0.0.1:8080/api/extract',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image_b64:b64,watermarks:wm_specs})});
+var extPwd=$('expwd')?$('expwd').value:'';var wm_specs=wm.length?wm.map(function(w){var p={type:w.ty};var wp=w.pwd||extPwd;if(wp)p.password=wp;if(w.ty==='freq'){p.delta=st.de;p.level=st.lv;p.sync=!!st.sy;p.bch=!!st.bc}return p}):[{type:'freq',delta:st.de,level:st.lv,sync:!!st.sy,bch:!!st.bc}];var r=await fetch('http://127.0.0.1:8080/api/extract',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image_b64:b64,watermarks:wm_specs})});
 
 
 
