@@ -66,3 +66,6 @@ def sorted_for_embed() -> list[BaseWatermark]:
 
 def sorted_for_extract() -> list[BaseWatermark]:
     return sorted(_registry.values(), key=lambda x: x.extract_order())
+
+
+from . import freq, lsb, visible, patchwork, dft, spread

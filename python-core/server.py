@@ -10,46 +10,60 @@ import uvicorn
 
 from core.config import WatermarkConfig
 from core.watermark import embed_watermark, extract_watermark, calc_capacity
+from core.pipeline import run_embed, run_extract
+from core.watermarks import WatermarkSpec, list_types
 
-app = FastAPI(title='Watermark Core Engine', version='1.0.0')
+app = FastAPI(title='Watermark Core Engine', version='2.0.0')
+
+
+class WatermarkSpecModel(BaseModel):
+    type: str
+    text: str = ''
+    alpha: float | None = None
+    delta: float | None = None
+    level: int | None = None
+    sync: bool | None = None
+    bch: bool | None = None
+    opacity: float | None = None
+    x: int | None = None
+    y: int | None = None
+    font_size: int | None = None
+    rotation: int | None = None
+    seed: int | None = None
+    strength: float | None = None
+    spread_factor: int | None = None
+    r_min: float | None = None
+    r_max: float | None = None
+    n_bits: int | None = None
 
 
 class EmbedRequest(BaseModel):
-    image_b64: str = Field(..., description='Base64 encoded PNG image')
-    watermark_text: str = Field(default='', description='Text watermark to embed')
-    alpha: float = Field(default=0.05, ge=0.01, le=1.0)
-    delta: float = Field(default=36.0, ge=1.0, le=200.0)
-    level: int = Field(default=2, ge=1, le=4)
-    sync_enabled: bool = True
-    bch_enabled: bool = True
+    image_b64: str
+    watermarks: list[WatermarkSpecModel]
 
 
 class ExtractRequest(BaseModel):
-    image_b64: str = Field(..., description='Base64 encoded PNG stego image')
-    delta: float = Field(default=36.0, ge=1.0, le=200.0)
-    level: int = Field(default=2, ge=1, le=4)
-    sync_enabled: bool = True
-    bch_enabled: bool = True
+    image_b64: str
+    watermarks: list[WatermarkSpecModel]
 
 
 class EmbedResponse(BaseModel):
     image_b64: str
-    psnr: float
-    ssim: float
-    bits_embedded: int
-    job_id: str
-    level_used: int = 2
+    results: list[dict] = []
+    job_id: str = ''
 
 
 class ExtractResponse(BaseModel):
-    watermark_text: str
-    watermark_hex: str
-    sync_found: bool
-    sync_corr: float
-    job_id: str
+    results: list[dict] = []
+    job_id: str = ''
 
 
-@app.post('/api/embed', response_model=EmbedResponse)
+def _to_spec(m: WatermarkSpecModel) -> WatermarkSpec:
+    params = {k: v for k, v in m.model_dump(exclude={'type', 'text'}).items() if v is not None}
+    return WatermarkSpec(type=m.type, text=m.text, **params)
+
+
+@app.post('/api/embed')
 def embed(req: EmbedRequest):
     try:
         raw = base64.b64decode(req.image_b64)
@@ -57,18 +71,9 @@ def embed(req: EmbedRequest):
     except Exception as e:
         return JSONResponse(status_code=400, content={'error': f'Invalid image: {e}'})
 
-    config = WatermarkConfig(
-        alpha=req.alpha,
-        delta=req.delta,
-        level=req.level,
-        sync_enabled=req.sync_enabled,
-        bch_enabled=req.bch_enabled,
-    )
-
-    watermark_bytes = req.watermark_text.encode('utf-8')
-
+    specs = [_to_spec(m) for m in req.watermarks]
     try:
-        result_img, metrics = embed_watermark(img, watermark_bytes, config)
+        result_img, results = run_embed(img, specs)
     except ValueError as e:
         return JSONResponse(status_code=400, content={'error': str(e)})
     except Exception as e:
@@ -77,18 +82,10 @@ def embed(req: EmbedRequest):
     buf = io.BytesIO()
     result_img.save(buf, format='PNG')
     b64 = base64.b64encode(buf.getvalue()).decode()
-
-    return EmbedResponse(
-        image_b64=b64,
-        psnr=metrics['psnr'],
-        ssim=metrics['ssim'],
-        bits_embedded=metrics['bits_embedded'],
-        job_id=uuid.uuid4().hex[:12],
-        level_used=metrics.get('level_used', req.level),
-    )
+    return EmbedResponse(image_b64=b64, results=results, job_id=uuid.uuid4().hex[:12])
 
 
-@app.post('/api/extract', response_model=ExtractResponse)
+@app.post('/api/extract')
 def extract(req: ExtractRequest):
     try:
         raw = base64.b64decode(req.image_b64)
@@ -96,25 +93,18 @@ def extract(req: ExtractRequest):
     except Exception as e:
         return JSONResponse(status_code=400, content={'error': f'Invalid image: {e}'})
 
-    config = WatermarkConfig(
-        delta=req.delta,
-        level=req.level,
-        sync_enabled=req.sync_enabled,
-        bch_enabled=req.bch_enabled,
-    )
-
+    specs = [_to_spec(m) for m in req.watermarks]
     try:
-        extracted_bytes, ext_info = extract_watermark(img, config=config)
+        results = run_extract(img, specs)
     except Exception as e:
         return JSONResponse(status_code=500, content={'error': f'Extract failed: {e}'})
 
-    return ExtractResponse(
-        watermark_text=extracted_bytes.decode('utf-8', errors='replace'),
-        watermark_hex=extracted_bytes.hex(),
-        sync_found=ext_info.get('sync_found', False),
-        sync_corr=ext_info.get('sync_corr', 0.0),
-        job_id=uuid.uuid4().hex[:12],
-    )
+    return ExtractResponse(results=results, job_id=uuid.uuid4().hex[:12])
+
+
+@app.get('/api/watermark-types')
+def watermark_types():
+    return {'types': list_types()}
 
 
 @app.get('/api/capacity')
@@ -125,7 +115,7 @@ def capacity(width: int = 256, height: int = 256, level: int = 2, sync_enabled: 
 
 @app.get('/api/health')
 def health():
-    return {'status': 'ok', 'engine': 'dwt-dct-svd'}
+    return {'status': 'ok', 'engine': 'pipeline-v2'}
 
 
 if __name__ == '__main__':
