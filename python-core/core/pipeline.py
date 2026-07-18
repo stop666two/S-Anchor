@@ -1,0 +1,35 @@
+from PIL import Image
+
+from .watermarks import WatermarkSpec, get, sorted_for_embed, sorted_for_extract
+
+
+def run_embed(carrier: Image.Image, specs: list[WatermarkSpec]) -> tuple[Image.Image, list[dict]]:
+    result = carrier
+    results = []
+    for spec in sorted(specs, key=lambda s: _order(s.type)):
+        wm = get(spec.type)
+        if wm is None:
+            raise ValueError(f'Unknown watermark type: {spec.type}')
+        payload = spec.text.encode('utf-8') if spec.text else b'\x00'
+        result, meta = wm.embed(result, payload, spec.params)
+        results.append({'type': spec.type, **meta})
+    return result, results
+
+
+def run_extract(stego: Image.Image, specs: list[WatermarkSpec]) -> list[dict]:
+    results = []
+    for spec in sorted(specs, key=lambda s: _order(s.type, extract=True)):
+        wm = get(spec.type)
+        if wm is None:
+            raise ValueError(f'Unknown watermark type: {spec.type}')
+        payload, meta = wm.extract(stego, spec.params)
+        text = payload.decode('utf-8', errors='replace')
+        results.append({'type': spec.type, 'text': text, **meta})
+    return results
+
+
+def _order(type_id: str, extract: bool = False) -> int:
+    wm = get(type_id)
+    if wm is None:
+        return 50
+    return wm.extract_order() if extract else wm.embed_order()
