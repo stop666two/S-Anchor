@@ -1449,7 +1449,7 @@ window.onresize=function(){rw()}
 
 
 
-var cc=$('cc');cc.onmousedown=function(e){if(!st.rd)return;dr=1;us(e)};document.onmousemove=function(e){if(dr)us(e)};document.onmouseup=function(){dr=0}
+var _cmp=$('cc');_cmp.onmousedown=function(e){if(!st.rd)return;dr=1;us(e)};document.onmousemove=function(e){if(dr)us(e)};document.onmouseup=function(){dr=0}
 
 
 
@@ -1469,7 +1469,7 @@ var cc=$('cc');cc.onmousedown=function(e){if(!st.rd)return;dr=1;us(e)};document.
 
 
 
-function us(e){var r=cc.getBoundingClientRect(),p=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*100;$('cw').style.setProperty('--s',p+'%');$('cdi').style.left=p+'%';$('cdh').style.left=p+'%'}
+function us(e){var r=_cmp.getBoundingClientRect(),p=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*100;$('cw').style.setProperty('--s',p+'%');$('cdi').style.left=p+'%';$('cdh').style.left=p+'%'}
 
 
 
