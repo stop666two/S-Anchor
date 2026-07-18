@@ -26,7 +26,7 @@ class DctBlockWatermark(BaseWatermark):
     def embed(self, carrier: Image.Image, payload: bytes, params: dict) -> tuple[Image.Image, dict]:
         arr = np.array(carrier.convert('RGB'), dtype=np.float64); arr = 0.299*arr[:,:,0] + 0.587*arr[:,:,1] + 0.114*arr[:,:,2]
         h, w = arr.shape
-        strength = params.get('strength', 12.0)
+        strength = params.get('strength', 18.0)
         block_size = 8
 
         length_bytes = struct.pack('>H', len(payload))
@@ -70,7 +70,7 @@ class DctBlockWatermark(BaseWatermark):
     def extract(self, stego: Image.Image, params: dict) -> tuple[bytes, dict]:
         arr = np.array(stego.convert('RGB'), dtype=np.float64); arr = 0.299*arr[:,:,0] + 0.587*arr[:,:,1] + 0.114*arr[:,:,2]
         h, w = arr.shape
-        strength = params.get('strength', 12.0)
+        strength = params.get('strength', 18.0)
         block_size = 8
         h_blocks = h // block_size
         w_blocks = w // block_size
