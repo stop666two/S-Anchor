@@ -71,7 +71,7 @@ class DftWatermark(BaseWatermark):
             y, x = positions[i]
             bits[i] = 1 if phase[y, x] > 0 else 0
 
-        payload = np.packbits(bits).tobytes()
+        payload = np.packbits(bits).tobytes().rstrip(b'\x00')
         return payload, {'bits_extracted': n_bits}
 
 

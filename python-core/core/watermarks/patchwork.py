@@ -69,7 +69,7 @@ class PatchworkWatermark(BaseWatermark):
         patch_size = 4
         a_patches, b_patches, _ = self._patches(arr, seed, n_bits, patch_size)
         bits = np.array([1 if np.mean(a) < np.mean(b) else 0 for a, b in zip(a_patches, b_patches)], dtype=np.uint8)
-        payload = np.packbits(bits).tobytes()
+        payload = np.packbits(bits).tobytes().rstrip(b'\x00')
         return payload, {'bits_extracted': len(bits)}
 
 

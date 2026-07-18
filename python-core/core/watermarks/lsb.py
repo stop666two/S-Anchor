@@ -35,7 +35,7 @@ class LsbWatermark(BaseWatermark):
             bits = flat[:n_bits] & 1
         else:
             bits = flat & 1
-        payload = np.packbits(bits.astype(np.uint8)).tobytes()
+        payload = np.packbits(bits.astype(np.uint8)).tobytes().rstrip(b'\x00')
         return payload, {'bits_extracted': len(bits)}
 
 

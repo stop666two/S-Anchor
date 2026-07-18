@@ -108,7 +108,8 @@ class FreqWatermark(BaseWatermark):
                 payload = np.concatenate(parts) if parts else payload
 
         max_bytes = min(len(payload) // 8, 64)
-        return bits_to_bytes(payload[:max_bytes * 8]), corr, found
+        raw = bits_to_bytes(payload[:max_bytes * 8])
+        return raw.rstrip(b'\x00'), corr, found
 
     def embed(self, carrier: Image.Image, payload: bytes, params: dict) -> tuple[Image.Image, dict]:
         config = self._make_config(params)
