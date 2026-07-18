@@ -24,7 +24,8 @@ for i in range(15):
 
 
 def encode(data_bits: np.ndarray) -> np.ndarray:
-    assert len(data_bits) == DATA_LEN
+    if len(data_bits) != DATA_LEN:
+        raise ValueError(f'BCH encode requires {DATA_LEN} bits, got {len(data_bits)}')
     m = list(data_bits) + [0] * ECC_LEN
     for i in range(DATA_LEN):
         if m[i]:

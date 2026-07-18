@@ -26,8 +26,8 @@ class EmbedRequest(BaseModel):
 
 class ExtractRequest(BaseModel):
     image_b64: str = Field(..., description='Base64 encoded PNG stego image')
-    delta: float = Field(default=36.0)
-    level: int = Field(default=2)
+    delta: float = Field(default=36.0, ge=1.0, le=200.0)
+    level: int = Field(default=2, ge=1, le=4)
     sync_enabled: bool = True
     bch_enabled: bool = True
 

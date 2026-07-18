@@ -129,7 +129,7 @@ func proxyToPython(w http.ResponseWriter, r *http.Request, path string, body io.
 	ctx := r.Context()
 	req, err := http.NewRequestWithContext(ctx, r.Method, pyHost+path, body)
 	if err != nil {
-		http.Error(w, `{"error":"internal error"}`, http.StatusInternalServerError)
+		jsonError(w, http.StatusInternalServerError, "internal error")
 		return
 	}
 	req.Header.Set("Content-Type", "application/json")

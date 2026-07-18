@@ -34,7 +34,7 @@ def _make_payload(data: bytes, config: WatermarkConfig, n_blocks: int):
         payload = np.concatenate(chunks)
     else:
         used = min(avail_data_bits, n_data * 8)
-        used = min(used, 256)
+        used = min(used, 512)
         payload = bytes_to_bits(data, used)
 
     if config.sync_enabled:
