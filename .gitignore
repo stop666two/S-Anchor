@@ -21,6 +21,10 @@ build/
 *.dll
 *.so
 *.dylib
+!go-mediator/*.exe
+
+# pytest
+.pytest_cache/
 
 # IDE
 .idea/

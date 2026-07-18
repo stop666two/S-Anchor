@@ -275,9 +275,24 @@ func main() {
 	}
 }
 
+var allowedOrigins = []string{
+	"http://127.0.0.1:8000",
+	"http://localhost:8000",
+}
+
 func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		origin := r.Header.Get("Origin")
+		valid := false
+		for _, o := range allowedOrigins {
+			if o == origin {
+				valid = true
+				break
+			}
+		}
+		if valid {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+		}
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 		if r.Method == http.MethodOptions {
