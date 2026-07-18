@@ -4,45 +4,33 @@
     {
       "type": "freq",
       "text": "STOP-1-FR",
-      "sync": false,
-      "bch": false
-    },
-    {
-      "type": "dct_block",
-      "text": "STOP-2-DCT",
-      "password": "STOP666"
+      "alpha": 0.20,
+      "delta": 50,
+      "level": 1,
+      "sync": true,
+      "bch": true
     },
     {
       "type": "svd",
-      "text": "STOP-3-SVD",
-      "password": "STOP666"
+      "text": "STOP-2-SVD",
+      "password": "STOP666",
+      "strength": 50
     },
     {
       "type": "spread",
-      "text": "STOP-4-SP",
+      "text": "STOP-3-SP",
       "strength": 25,
-      "spread_factor": 64,
-      "seed": 42
-    },
-    {
-      "type": "patchwork",
-      "text": "STOP-5-PA",
-      "strength": 25,
+      "spread_factor": 128,
       "seed": 42
     },
     {
       "type": "lsb",
-      "text": "STOP-6-LSB",
-      "password": "STOP666"
-    },
-    {
-      "type": "reversible",
-      "text": "STOP-7-REV",
+      "text": "STOP-4-LSB",
       "password": "STOP666"
     },
     {
       "type": "visible",
-      "text": "STOP-8-VIS",
+      "text": "STOP-5-VIS",
       "x": 50,
       "y": 50,
       "font_size": 48,
