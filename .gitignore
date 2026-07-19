@@ -14,6 +14,8 @@ __pycache__/
 dist/
 build/
 .eggs/
+.pytest_cache/
+.ruff_cache/
 
 # Go
 *.exe
@@ -21,9 +23,6 @@ build/
 *.dll
 *.so
 *.dylib
-
-# pytest
-.pytest_cache/
 
 # IDE
 .idea/

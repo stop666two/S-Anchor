@@ -1,211 +1,79 @@
-# UI 设计规格：频域盲水印系统
+# S-ANCHOR UI Design
 
-> **风格**: Tactical Telemetry & CRT Terminal（工业极简暗色终端）
-> **模式**: 完整三层架构（HTML/JS + Go + Python）
+> **Style:** Claude Warm Cream Editorial
+> **Palette:** Cream canvas + Coral accent + Dark navy technical surfaces
 
----
+## Color System
 
-## 一、整体布局
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `--canvas` | `#faf9f5` | Main page background, warm cream |
+| `--surface-soft` | `#f5f0e8` | Soft section backgrounds, parameter groups |
+| `--surface-card` | `#efe9de` | Card backgrounds |
+| `--surface-dark` | `#181715` | Technical panels (preview, comparison, log) |
+| `--surface-dark-elevated` | `#252320` | Elevated dark surfaces |
+| `--primary` | `#cc785c` | Coral — CTAs, active buttons, accents |
+| `--primary-active` | `#a9583e` | Coral hover/press state |
+| `--ink` | `#141413` | Primary text (warm near-black) |
+| `--body` | `#3d3d3a` | Body text |
+| `--muted` | `#6c6a64` | Secondary text, labels |
+| `--muted-soft` | `#8e8b82` | Captions, fine print |
+| `--hairline` | `#e6dfd8` | Borders, dividers |
+| `--on-primary` | `#ffffff` | Text on coral buttons |
+| `--on-dark` | `#faf9f5` | Text on dark panels |
+| `--success` | `#5db872` | Status indicators |
+| `--error` | `#c64545` | Error states |
+
+## Typography
+
+| Level | Font | Size | Weight | Use |
+|-------|------|------|--------|-----|
+| UI Labels | Inter | 11-13px | 500 | Panel headers, buttons |
+| Values | JetBrains Mono | 15-18px | 500 | Slider values, metrics |
+| Body | Inter | 12-14px | 400 | Log output, descriptions |
+| Log Mono | JetBrains Mono | 12px | 400 | Terminal log |
+
+## Layout
 
 ```
-┌─────────────── SYSTEM CONTROL v1.0 ─────────────────┐
-│ [ STATUS ] IDLE  |  [ MODE ] EMBED  |  [PID] 0001  │
-├────────────────────────────────────────────────────┤
+┌──────────────────────────────────────────────────────┐
+│ Status Bar: [● ONLINE] EMBED | EXTRACT  [ZH|EN|RU]  │
+├──────────────────────────────────────────────────────┤
+│  ┌─ Left Column (cream canvas) ──┐ ┌─ Right Column ─┐│
+│  │  CARRIER                       │ │  PARAMETERS   ││
+│  │  ┌─ Drop zone (dashed) ────┐  │ │  (cream cards) ││
+│  │  │  + Drop image or click  │  │ │               ││
+│  │  └─────────────────────────┘  │ │  ┌──────────┐ ││
+│  │  filename | 256x256 | 12KB   │ │  │ EMBED    │ ││
+│  │                               │ │  └──────────┘ ││
+│  │  PREVIEW                      │ └──────────────┘│
+│  │  ┌─ Dark panel ──────────┐   │                   │
+│  │  │  [canvas / extract]   │   │                   │
+│  │  └───────────────────────┘   │                   │
+│  └──────────────────────────────┘                   │
 │                                                      │
-│  ┌──────────┐  ┌──────────┐  ┌──────────────────┐  │
-│  │          │  │          │  │  PARAMETER PANEL  │  │
-│  │  CARRIER  │  │ WATERMARK│  │  [Alpha] 0.05   │  │
-│  │  IMAGE    │  │  IMAGE   │  │  [Delta] 36.0   │  │
-│  │          │  │          │  │  [Level] 2       │  │
-│  │ [UPLOAD] │  │ [UPLOAD] │  │  [Mode] TEXT/IMG │  │
-│  └──────────┘  └──────────┘  │  [Sync] ON       │  │
-│                               │  [BCH] ON        │  │
-│                               │  ┌──────────┐    │  │
-│                               │  │ [EXECUTE] │    │  │
-│                               │  └──────────┘    │  │
-│  ┌──────────────────────────┐ └──────────────────┘  │
-│  │   COMPARISON VIEWPORT    │                       │
-│  │   [slider: original │    │                       │
-│  │    vs watermarked]       │                       │
-│  └──────────────────────────┘                       │
+│  COMPARISON (dark panel)                             │
+│  ┌──────────────────────────────────────────────┐   │
+│  │  FOUND 4/4 [TYPE] content                    │   │
+│  │  PSNR  SSIM  BITS  STATUS                    │   │
+│  └──────────────────────────────────────────────┘   │
 │                                                      │
-├────────────────────────────────────────────────────┤
-│ [ LOG ] >>> 初始化完成 >>> 等待用户输入...           │
-│          >>> 系统就绪                                  │
-└────────────────────────────────────────────────────┘
+│  LOG (dark panel)                                    │
+│  ┌──────────────────────────────────────────────┐   │
+│  │  [HH:MM:SS] >>> message                      │   │
+│  └──────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────┘
 ```
 
-### 布局规格
-- **导航栏**: 40px 高，纯黑底 `#0A0A0A`，白色等宽字体
-- **主区域**: 三列网格（1fr 1fr 1.2fr），间距 1px 分割线
-- **底部日志**: 120px 高，独立区域，模拟终端输出
-- **所有圆角**: `border-radius: 0`（机械刚性直角）
+## Components
 
----
+- **Buttons:** Inter 11px, 500 weight, 8px border-radius, `--primary` accent when active
+- **Sliders:** Thin 3px track, 14px coral circular thumb
+- **Cards:** `--surface-soft` or `--surface-dark` background, 8-12px border-radius
+- **Dark panels:** Preview canvas, comparison view, log — all use `--surface-dark`
+- **Modals:** Center-aligned overlay with `backdrop-filter: blur(4px)`
 
-## 二、颜色系统（Tactical Telemetry 暗色）
+## Responsive
 
-| Token | 值 | 用途 |
-|-------|-----|------|
-| `--bg-primary` | `#0A0A0A` | 主背景（熄灭的 CRT） |
-| `--bg-secondary` | `#121212` | 面板/卡片背景 |
-| `--bg-tertiary` | `#1A1A1A` | 输入框/可交互区域 |
-| `--fg-primary` | `#EAEAEA` | 白色磷光主文字 |
-| `--fg-secondary` | `#888888` | 辅助文字/标签 |
-| `--accent-red` | `#E61919` | 航空红：警报/高亮/分割线 |
-| `--terminal-green` | `#4AF626` | 仅用于 STATUS 指示灯 |
-| `--border` | `#333333` | 分割线/边框 |
-| `--border-accent` | `#E61919` | 强调边框（激活态） |
-
----
-
-## 三、字体系统
-
-| 层级 | 字体 | 字号 | 字距 | 行高 | 用例 |
-|------|------|------|------|------|------|
-| Macro-Typography | `Inter` Black | `clamp(2rem, 4vw, 4rem)` | `-0.03em` | `0.9` | 大标题、状态指示 |
-| 导航栏 | `JetBrains Mono` | `12px` | `0.08em` | `1.2` | 顶部状态栏、菜单 |
-| 面板标题 | `JetBrains Mono` | `11px` | `0.1em` | `1.4` | 各区域标题 |
-| 参数标签 | `JetBrains Mono` | `10px` | `0.05em` | `1.4` | 参数名称 |
-| 参数值 | `JetBrains Mono` | `13px` | `0.03em` | `1.4` | 参数输入/显示 |
-| 日志输出 | `IBM Plex Mono` | `12px` | `0.05em` | `1.5` | 底部终端日志 |
-| 数据读数 | `VT323` | `16px` | `0.05em` | `1.0` | PSNR/SSIM 数值 |
-
----
-
-## 四、组件规格
-
-### 4.1 顶部状态栏 (Status Bar)
-```
-[ ● ONLINE ]  [ MODE: EMBED ]  [ PID: 0x2A3F ]  [ REV: 1.0 ]
-```
-- 高度 40px，背景 `#0A0A0A`
-- 状态指示灯：绿色圆点 `●` + 状态文字
-- 模式切换：EMBED / EXTRACT 两种
-- 所有文字 `JetBrains Mono` 12px uppercase
-- 分割字符 `|` 或 `] [` 作为间隔
-
-### 4.2 图像上传面板 (Image Panels)
-```
-┌─────────────────────┐
-│ [ CARRIER IMAGE ]   │
-│                      │
-│   +----------------+ │
-│   │  [DROP ZONE]   │ │
-│   │  或拖拽图片     │ │
-│   +----------------+ │
-│                      │
-│ FILE: none           │
-│ SIZE: --- x ---      │
-└─────────────────────┘
-```
-- 虚线边框 `2px dashed #333`，hover 时变 `#E61919`
-- 拖拽上传 + 点击文件选择
-- 上传后显示缩略图，保持宽高比
-- 底部显示文件名 + 尺寸信息
-- 右侧水印面板接受文本输入（水印字符串）或图片上传
-
-### 4.3 参数控制面板 (Parameter Panel)
-```
-┌─────────────────────────┐
-│ [ PARAMETER CONTROL ]   │
-│                          │
-│ ALPHA      [====o====]  │
-│            0.05          │
-│                          │
-│ DELTA      [==o=======]  │
-│            36.0          │
-│                          │
-│ LEVEL      [2]           │
-│                          │
-│ ┌─────────────────────┐  │
-│ │ SYNC  PATTERN  [ON] │  │
-│ │ BCH   ECC     [ON]  │  │
-│ └─────────────────────┘  │
-│                          │
-│ ┌─────────────────────┐  │
-│ │   >>> EXECUTE <<<   │  │
-│ └─────────────────────┘  │
-└─────────────────────────┘
-```
-- 滑动条（Range Slider）无圆角，红色滑块 `#E61919`
-- 开关切换（Toggle）为 `[ON]` / `[OFF]` 文本样式
-- 执行按钮：红色边框 + 白色文字，hover 时填充红色背景
-- 参数分组用 ASCII 边框装饰
-
-### 4.4 对比视图 (Comparison Viewport)
-```
-┌─────────────────────────────────┐
-│ [ ORIGINAL ]    [ WATERMARKED ] │
-│─────────────────────────────────│
-│                                 │
-│     ◄─── 拖拽滑块对比 ───►      │
-│                                 │
-│─────────────────────────────────│
-│ PSNR: 42.31 dB  |  SSIM: 0.986 │
-└─────────────────────────────────┘
-```
-- 原图与含水印图并列或叠加滑块对比
-- 滑块（Divider）为红色竖线 `#E61919`
-- 底部显示 PSNR / SSIM 指标读数
-
-### 4.5 终端日志 (Terminal Log)
-```
-┌─[ SYSTEM LOG ]────────────────────┐
-│ [12:00:01] >>> INIT OK              │
-│ [12:00:02] >>> waiting for input... │
-│ [12:00:15] >>> C2PA module disabled │
-│ [12:00:20] >>> EMBED: processing... │
-│ [12:00:21] >>> DWT  OK (2 levels)   │
-│ [12:00:22] >>> DCT  OK (8x8 blocks)│
-│ [12:00:23] >>> SVD  OK              │
-│ [12:00:24] >>> QIM  OK (Delta=36)   │
-│ [12:00:25] >>> DONE  PSNR=42.31dB  │
-└─────────────────────────────────────┘
-```
-- 固定高度 120px，可滚动
-- 每行带时间戳 `[HH:MM:SS]`
-- 正常输出灰色，处理中白色，错误红色
-- `>>>` 前缀模拟终端输出
-
----
-
-## 五、状态与交互规则
-
-### 5.1 页面状态
-| 状态 | 描述 | 表现 |
-|------|------|------|
-| IDLE | 空闲，等待操作 | 顶部状态灯绿色，可操作 |
-| PROCESSING | 处理中 | 状态灯闪烁，按钮禁用，日志滚动 |
-| SUCCESS | 处理完成 | 状态灯绿色，显示结果指标 |
-| ERROR | 处理失败 | 状态灯红色，日志显示错误详情 |
-
-### 5.2 交互反馈
-- **按钮**: hover 时 `#E61919` 填充背景，active 时缩小 `transform: scale(0.98)`
-- **拖拽上传**: drag-over 时边框变红，显示 ">>> RELEASED TO CONFIRM"
-- **滑动条**: 值变化时实时更新右侧数值显示
-- **日志**: 自动滚动到底部，新条目有淡入效果
-
----
-
-## 六、响应式断点
-
-| 断点 | 布局调整 |
-|------|---------|
-| > 1024px | 三列网格主布局 |
-| 768-1024px | 两列（参数面板折叠到右侧） |
-| < 768px | 单列堆叠，参数面板可折叠 |
-
----
-
-## 七、技术约束
-
-- 纯 HTML + CSS + JavaScript（无前端框架）
-- 所有 Canvas 操作使用原生 API
-- 字体使用 Google Fonts 加载（Inter + JetBrains Mono + IBM Plex Mono + VT323）
-- 无外部 CSS 库依赖
-- 所有图片处理在 Canvas 中完成像素级提取
-
----
-
-请审查此 UI 规格。确认后我开始实现完整项目。
+- **> 768px:** Two-column grid
+- **< 768px:** Single column, stacked
