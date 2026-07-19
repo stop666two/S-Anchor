@@ -4,8 +4,6 @@
     {"type":"freq","text":"FR01","delta":60,"level":2,"sync":false,"bch":true},
     {"type":"dft","text":"DF02","strength":50},
     {"type":"dct_block","text":"DC03","strength":30},
-    {"type":"svd","text":"SV04","strength":40},
-    {"type":"spread","text":"SP05","strength":30,"spread_factor":64,"seed":42},
-    {"type":"patchwork","text":"PA06","strength":25,"seed":7}
+    {"type":"svd","text":"SV04","strength":40}
   ]
 }
