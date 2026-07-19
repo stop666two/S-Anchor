@@ -57,8 +57,10 @@
           <button class="tb sm" onclick=clearAll() style=color:var(--error)>x</button>
           <button class="tb sm" onclick=wmUp() style=font-size:10px;padding:2px 6px>▲</button>
           <button class="tb sm" onclick=wmDown() style=font-size:10px;padding:2px 6px>▼</button>
-          <button class="tb sm" onclick=exportCfg() style=font-size:9px;padding:2px 6px>EX</button>
-          <button class="tb sm" onclick=importCfg() style=font-size:9px;padding:2px 6px>IM</button>
+          <button class="tb sm" onclick=selectAll() style=font-size:9px;padding:2px 6px>[X]</button>
+          <button class="tb sm" onclick=batchExport() style=font-size:9px;padding:2px 4px>EX*</button>
+          <button class="tb sm" onclick=exportCfg() style=font-size:9px;padding:2px 4px>EX1</button>
+          <button class="tb sm" onclick=importCfg() style=font-size:9px;padding:2px 4px>IM</button>
           <input type=file id=cfgFile accept=".json" style=display:none onchange=loadCfg(this)>
         </div>
         <input class=wi id=wet value="" placeholder="Edit selected watermark text" style="width:100%;font-size:12px">
