@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "watermarks": [
+    {"type":"lsb","text":"LB01-this-message-is-long-using-lsb-capacity"},
+    {"type":"reversible","text":"RE02"},
+    {"type":"visible","text":"S-ANCHOR","x":50,"y":50,"font_size":48,"opacity":0.25,"rotation":0}
+  ]
+}

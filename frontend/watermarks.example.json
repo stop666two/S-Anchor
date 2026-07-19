@@ -1,13 +1,10 @@
 {
   "version": 1,
   "watermarks": [
-    {"type":"freq","text":"FR01","delta":60,"level":1,"sync":true,"bch":true},
-    {"type":"dct_block","text":"DC02","password":"S-ANCHOR-888","strength":40},
-    {"type":"svd","text":"SV03","password":"S-ANCHOR-888","strength":60},
-    {"type":"spread","text":"SP04","strength":35,"spread_factor":128,"seed":42},
-    {"type":"patchwork","text":"PA05","strength":30,"seed":7},
-    {"type":"reversible","text":"RE06","password":"S-ANCHOR-888"},
-    {"type":"lsb","text":"LB07-this-message-is-long-using-lsb-capacity","password":"S-ANCHOR-888"},
-    {"type":"visible","text":"S-ANCHOR","x":50,"y":50,"font_size":48,"opacity":0.25,"rotation":0}
+    {"type":"freq","text":"FR01","delta":40,"level":1,"sync":true,"bch":true},
+    {"type":"dct_block","text":"DC02","password":"S-ANCHOR-888","strength":30},
+    {"type":"svd","text":"SV03","password":"S-ANCHOR-888","strength":40},
+    {"type":"spread","text":"SP04","strength":30,"spread_factor":64,"seed":42},
+    {"type":"patchwork","text":"PA05","strength":25,"seed":7}
   ]
 }
