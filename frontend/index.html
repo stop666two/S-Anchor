@@ -1,676 +1,176 @@
 <!DOCTYPE html>
-
-
-
-
 <html lang=en>
-
-
-
-
 <meta charset=UTF-8>
-
-
-
-
 <meta name=viewport content="width=device-width,initial-scale=1">
-
-
-
-
-<link rel="icon" type="image/svg+xml" href="favicon.svg"><title>S-ANCHOR</title>
-
-
-
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;600&family=IBM+Plex+Mono&family=VT323&family=Playfair+Display:wght@700&family=Lobster&family=Oswald:wght@600" rel=stylesheet>
-
-
-
-
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>S-ANCHOR</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=STIX+Two+Text:wght@400;600&display=swap" rel=stylesheet>
 <link rel=stylesheet href="style.css">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <body>
 
-
-
-
-
-
-
-
-
-
-
-<div class=sb><span class="dot g" id=sd></span><span id=st data-i=on>ONLINE</span><span>|</span><span data-i=md>MODE:</span>
-
-
-
-
-
-
-
-
-
-
-
-<button class="b a" onclick=m(0)>EMBED</button><button class=b onclick=m(1)>EXTRACT</button>
-
-
-
-
-
-
-
-
-
-
-
-<span class=sr>PID:<span id=pd></span></span>
-
-
-
-
-
-
-
-
-
-
-
-<button class=l onclick=sl('zh')>ZH</button><button class="l a" onclick=sl('en')>EN</button><button class=l onclick=sl('ru')>RU</button></div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<div class=sb>
+  <span class="dot g" id=sd></span>
+  <span id=st data-i=on>ONLINE</span>
+  <span style=color:var(--hairline)>|</span>
+  <button class="b a" onclick=m(0) data-i=em>EMBED</button>
+  <button class=b onclick=m(1) data-i=ex>EXTRACT</button>
+  <span class=sr>
+    <span style=font-size:11px;color:var(--muted-soft)>PID:</span>
+    <span id=pd style=font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)></span>
+    <button class=l onclick=sl('zh')>ZH</button>
+    <button class="l a" onclick=sl('en')>EN</button>
+    <button class=l onclick=sl('ru')>RU</button>
+  </span>
+</div>
 
 <div class=mc>
-
-
-
-
-
-
-
-
-
-
-
-<div><div class=ph data-i=ca>CARRIER</div>
-
-
-
-
-
-
-
-
-
-
-
-<div class=uz><div class=da id=cd><span>+</span><input type=file accept="image/*"></div>
-
-
-
-
-
-
-
-
-
-
-
-<div class=fi id=ci data-i=no>No file</div></div></div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div><div class=ph data-i=pv>PREVIEW</div>
-
-
-
-
-
-
-
-
-
-
-
-<div class=pr><div class=np id=pn data-i=nc>NO CARRIER</div><canvas id=cv></canvas><div id=results style="display:none;flex:1;overflow-y:auto;padding:4px;background:var(--b1)"></div></div></div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div><div class=ph data-i=pm>PARAMETERS</div>
-
-
-
-
-
-
-
-
-
-
-
-<div class=pt id=pp>
-
-
-
-
-
-
-
-
-
-
-
-<div class=pg><div class=l data-i=wt>WATERMARK <span id=wc>0</span></div>
-
-
-
-
-
-
-
-
-
-
-
-<div style=display:flex;gap:4px;margin-bottom:4px><select class=sl id=ws onchange=ws()><option value=-1>--</option></select>
-
-
-
-
-
-
-
-
-
-
-
+  <div>
+    <div class=ph data-i=ca>CARRIER</div>
+    <div class=uz>
+      <div class=da id=cd>
+        <div class=da-label><span>+</span>Drop image or click to upload</div>
+        <input type=file accept="image/*">
+      </div>
+      <div class=fi id=ci data-i=no>No file</div>
+    </div>
+    <div class=ph data-i=pv>PREVIEW</div>
+    <div class=pr>
+      <div class=np id=pn data-i=nc>NO CARRIER</div>
+      <canvas id=cv></canvas>
+      <div id=results style="display:none;flex:1;overflow-y:auto;padding:8px;background:var(--surface-dark);border-radius:8px;color:var(--on-dark-soft);font-size:12px"></div>
+    </div>
+  </div>
+
+  <div>
+    <div class=ph data-i=pm>PARAMETERS</div>
+    <div class=pt id=pp>
+      <div class=pg>
+        <div class=l data-i=wt>WATERMARK <span id=wc>0</span></div>
+        <div style=display:flex;gap:4px;margin-bottom:4px>
+          <select class=sl id=ws onchange=ws() style=margin-bottom:0><option value=-1>--</option></select>
+        </div>
+        <div id=wi></div>
+        <button class="tb sm" onclick=openAddDlg() style=margin-bottom:4px>+ ADD</button>
+        <div style=display:flex;gap:4px;margin-bottom:2px;flex-wrap:wrap>
+          <select class=sl id=wmf style="font-size:10px;flex:1;min-width:80px" onchange=applyFilter()><option value=>ALL</option><option value=freq>Freq</option><option value=lsb>LSB</option><option value=visible>Visible</option><option value=patchwork>Patch</option><option value=svd>SVD</option><option value=spread>Spread</option><option value=dct_block>DCT Block</option><option value=reversible>Rev</option></select>
+          <button class="tb sm" onclick=wd() data-i=dl>DEL</button>
+          <button class="tb sm" onclick=clearAll() style=color:var(--error)>x</button>
+          <button class="tb sm" onclick=exportCfg() style=font-size:9px;padding:2px 6px>EX</button>
+          <button class="tb sm" onclick=importCfg() style=font-size:9px;padding:2px 6px>IM</button>
+          <input type=file id=cfgFile accept=".json" style=display:none onchange=loadCfg(this)>
+        </div>
+        <input class=wi id=wet value="" placeholder="Edit selected watermark text" style="width:100%;font-size:12px">
+      </div>
+
+      <div class=pg>
+        <div class=l data-i=x>X</div>
+        <div class=sr><input type=range id=rx min=0 max=100 value=50><span class=v id=vx>50%</span></div>
+      </div>
+      <div class=pg>
+        <div class=l data-i=y>Y</div>
+        <div class=sr><input type=range id=ry min=0 max=100 value=50><span class=v id=vy>50%</span></div>
+      </div>
+      <div class=pg>
+        <div class=l data-i=rt>ROTATE</div>
+        <div class=sr><input type=range id=rr min=0 max=360 value=0><span class=v id=vr>0</span></div>
+      </div>
+      <div class=pg>
+        <div class=l data-i=sz>SIZE</div>
+        <div class=sr><input type=range id=rs min=12 max=120 value=48><span class=v id=vs>48</span></div>
+      </div>
+      <div class=pg>
+        <div class=l data-i=op>OPACITY</div>
+        <div class=sr><input type=range id=ro min=1 max=100 value=85><span class=v id=vo>85%</span></div>
+      </div>
+
+      <div class=sp>DWT-DCT-SVD</div>
+
+      <div class=pg>
+        <div class=l data-i=al>ALPHA</div>
+        <div class=sr><input type=range id=ra min=1 max=20 value=5><span class=v id=va>0.05</span></div>
+      </div>
+      <div class=pg>
+        <div class=l data-i=de>DELTA</div>
+        <div class=sr><input type=range id=rd min=10 max=100 value=36><span class=v id=vd>36</span></div>
+      </div>
+      <div class=pg>
+        <div class=l data-i=lv>LEVEL</div>
+        <div class=sr><input type=range id=rl min=1 max=4 value=2><span class=v id=vl>2</span></div>
+      </div>
+      <div class=pg>
+        <div class=l><span data-i=sy>SYNC</span> <button class="tb a sm" id=ts>ON</button> <span data-i=bh>BCH</span> <button class="tb a sm" id=tb style=margin-left:6px>ON</button></div>
+        <div id=cpd style="font-size:10px;color:var(--muted);letter-spacing:.3px;padding:2px 0">MAX: -- bytes | USED: -- bytes</div>
+      </div>
+
+      <button class=bx id=be data-i=xc data-i=xc>>> EXECUTE <<<</button>
+    </div>
+
+    <div class=pt id=xr style=display:none>
+      <div class=ph>EXTRACT</div>
+      <div style="font-size:10px;color:var(--error);padding:2px 0;letter-spacing:.5px;text-transform:uppercase;font-weight:500">Password (if any)</div>
+      <input class=wi id=expwd value="" type="password" placeholder="Enter password used during embedding" style="margin:2px 0 6px;width:100%;font-size:12px">
+      <div id=xl style="flex:1;overflow-y:auto;padding:8px;background:var(--surface-soft);border-radius:8px;font-size:12px;color:var(--muted);border:1px solid var(--hairline);min-height:80px">
+        <span style=color:var(--success)>Click EXTRACT to detect watermarks</span>
+      </div>
+      <button class=bx id=be2 data-i=xc data-i=xc>>> EXTRACT <<<</button>
+    </div>
+  </div>
 </div>
 
-
-
-
-
-
-
-
-
-
-
-<div id=wi style=font-size:11px;color:var(--f1);min-height:12px;margin-bottom:2px></div>
-
-
-
-
-
-
-
-
-
-
-
-<button class="tb sm" onclick=openAddDlg() style=margin-bottom:4px>+ ADD</button>
-<div style=display:flex;gap:4px;margin-bottom:2px>
-  <select class=sl id=wmf style=font-size:10px onchange=applyFilter()><option value=>ALL</option><option value=freq>Freq</option><option value=lsb>LSB</option><option value=visible>Visible</option><option value=patchwork>Patch</option><option value=svd>SVD</option><option value=spread>Spread</option><option value=dct_block>DCT Block</option><option value=reversible>Rev</option></select>
-  <button class="tb sm" onclick=wd() data-i=dl style=flex-shrink:0>DEL</button>
-  <button class="tb sm" onclick=clearAll() style=flex-shrink:0;color:var(--r)>x</button>
-  <button class="tb sm" onclick=exportCfg() style=font-size:9px;padding:2px 4px>EX</button>
-  <button class="tb sm" onclick=importCfg() style=font-size:9px;padding:2px 4px>IM</button>
-  <input type=file id=cfgFile accept=".json" style=display:none onchange=loadCfg(this)>
+<div class=cv style="padding:0 16px;max-width:1400px;margin:0 auto;width:100%">
+  <div class=ph data-i=cp>COMPARISON</div>
+  <div class=cc id=cc>
+    <img class=ci id=co style=display:none>
+    <img class="ci ct" id=cw style=display:none>
+    <div class=cd id=cdi style=display:none></div>
+    <div class=ch id=cdh style=display:none>></div>
+    <div class=cp id=cp data-i=aw>AWAITING</div>
+  </div>
+  <div class=mr>
+    <div><div class=ml>PSNR</div><div class=mv id=mp>--</div></div>
+    <div><div class=ml>SSIM</div><div class=mv id=ms>--</div></div>
+    <div><div class=ml>BITS</div><div class=mv id=mb>--</div></div>
+    <div><div class=ml>STATUS</div><div class=mv id=mst data-i=id>IDLE</div></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px;padding:4px 0 8px">
+    <input class=wi id=dlname value="" placeholder="filename.png" style="font-size:12px;padding:6px 10px;flex:1;max-width:250px;display:none">
+    <button class="tb sm" id=dlb style=display:none onclick=dl() data-i=sc>DOWNLOAD</button>
+  </div>
 </div>
-<input class=wi id=wet value="" placeholder="Edit selected watermark text" style="width:100%;padding:4px 6px;background:var(--b2);border:1px solid var(--d);color:var(--f0);font-family:inherit;font-size:11px;outline:none">
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class=pg><div class=l data-i=x>X</div><div class=sr><input type=range id=rx min=0 max=100 value=50><span class=v id=vx>50%</span></div></div>
-
-
-
-
-
-
-
-
-
-
-
-<div class=pg><div class=l data-i=y>Y</div><div class=sr><input type=range id=ry min=0 max=100 value=50><span class=v id=vy>50%</span></div></div>
-
-
-
-
-
-
-
-
-
-
-
-<div class=pg><div class=l data-i=rt>ROTATE</div><div class=sr><input type=range id=rr min=0 max=360 value=0><span class=v id=vr>0</span></div></div>
-
-
-
-
-
-
-
-
-
-
-
-<div class=pg><div class=l data-i=sz>SIZE</div><div class=sr><input type=range id=rs min=12 max=120 value=48><span class=v id=vs>48</span></div></div>
-
-
-
-
-
-
-
-
-
-
-
-<div class=pg><div class=l data-i=op>OPACITY</div><div class=sr><input type=range id=ro min=1 max=100 value=85><span class=v id=vo>85%</span></div></div>
-
-
-
-
-
-
-
-
-
-
-
-<div class=sp>DWT-DCT-SVD</div>
-
-
-
-
-
-
-
-
-
-
-
-<div class=pg><div class=l data-i=al>ALPHA</div><div class=sr><input type=range id=ra min=1 max=20 value=5><span class=v id=va>0.05</span></div></div>
-
-
-
-
-
-
-
-
-
-
-
-<div class=pg><div class=l data-i=de>DELTA</div><div class=sr><input type=range id=rd min=10 max=100 value=36><span class=v id=vd>36</span></div></div>
-
-
-
-
-
-
-
-
-
-
-
-<div class=pg><div class=l data-i=lv>LEVEL</div><div class=sr><input type=range id=rl min=1 max=4 value=2><span class=v id=vl>2</span></div></div>
-
-
-
-
-
-
-
-
-
-
-
-<div class=pg><div class=l><span data-i=sy>SYNC</span> <button class="tb a sm" id=ts>ON</button> <span data-i=bh>BCH</span> <button class="tb a sm" id=tb style=margin-left:6px>ON</button></div></div><div style="font-size:10px;color:var(--f1);letter-spacing:.05em;padding:2px 0" id=cpd>MAX: -- bytes | USED: -- bytes</div>
-
-
-
-
-
-
-
-
-
-
-
-<button class=bx id=be data-i=xc>>> EXECUTE <<<</button></div></div></div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class=pt id=xr style=display:none><div class=ph>EXTRACT</div><div style=font-size:9px;color:var(--r);padding:4px 8px 0;letter-spacing:.05em;text-transform:uppercase>Password (if any)</div><input class=wi id=expwd value="" type="password" placeholder="Enter password used during embedding" style="margin:2px 8px 6px;width:calc(100% - 16px);padding:4px 6px;background:var(--b2);border:1px solid var(--d);color:var(--f0);font-family:inherit;font-size:11px;outline:none"><div id=xl style="flex:1;overflow-y:auto;padding:8px;font-size:12px;color:var(--f1)"><span style=color:var(--g)>Click EXTRACT to detect watermarks</span></div><button class=bx id=be2>>> EXTRACT <<<</button></div><div class=cv style="border-top:1px solid var(--d)">
-
-
-
-
-
-
-
-
-
-
-
-<div class=ph data-i=cp>COMPARISON</div>
-
-
-
-
-
-
-
-
-
-
-
-<div class=cc id=cc>
-
-
-
-
-
-
-
-
-
-
-
-<img class=ci id=co style=display:none><img class="ci ct" id=cw style=display:none>
-
-
-
-
-
-
-
-
-
-
-
-<div class=cd id=cdi style=display:none></div><div class=ch id=cdh style=display:none>></div>
-
-
-
-
-
-
-
-
-
-
-
-<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--d);font-size:12px;letter-spacing:.1em;text-transform:uppercase" id=cp data-i=aw>AWAITING</div></div>
-
-
-
-
-
-
-
-
-
-
-
-<div class=mr>
-
-
-
-
-
-
-
-
-
-
-
-<div><div class=ml>PSNR</div><div class=mv id=mp>--</div></div>
-
-
-
-
-
-
-
-
-
-
-
-<div><div class=ml>SSIM</div><div class=mv id=ms>--</div></div>
-
-
-
-
-
-
-
-
-
-
-
-<div><div class=ml>BITS</div><div class=mv id=mb>--</div></div>
-
-
-
-
-
-
-
-
-
-
-
-<div><div class=ml>STATUS</div><div class=mv id=mst data-i=id>IDLE</div></div>
-
-
-
-
-
-
-
-
-
-
-
-<div style=display:flex;align-items:center;padding:4px 8px;gap:4px><input class=wi id=dlname value="" placeholder="filename.png" style=font-size:11px;padding:4px 6px;display:none><button class="tb sm" id=dlb style=display:none onclick=dl() data-i=sc>DOWNLOAD</button></div></div></div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class=tl><div class=lh data-i=lg>LOG</div><div class=lb id=lb></div></div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<div class=tl>
+  <div class=lh data-i=lg>LOG</div>
+  <div class=lb id=lb></div>
+</div>
+
+<div id=wmModal>
+  <div>
+    <div style=display:flex;justify-content:space-between;align-items:center;margin-bottom:12px>
+      <span style="font-size:14px;font-weight:500;color:var(--ink);letter-spacing:.3px">ADD WATERMARK <span id=adlgCount style=color:var(--primary);font-size:12px>0</span></span>
+      <button class="tb sm" onclick=closeAddDlg() style="font-size:16px;padding:0 8px;line-height:1">x</button>
+    </div>
+    <select class=sl id=amt style="margin-bottom:4px" onchange=updateTypeDesc()>
+      <option value=freq>Freq - Robust, small capacity</option>
+      <option value=lsb>LSB - Fragile, huge capacity</option>
+      <option value=visible>Visible - Text overlay</option>
+      <option value=patchwork>Patchwork - JPEG resistant</option>
+      <option value=svd>SVD - Singular value robust</option>
+      <option value=spread>Spread - Most robust</option>
+      <option value=dct_block>DCT Block - JPEG robust</option>
+      <option value=reversible>Reversible - Lossless</option>
+    </select>
+    <div id=typeDesc style="font-size:10px;color:var(--muted);margin-bottom:8px;min-height:14px">Recommended for secret data that survives compression</div>
+    <input class=wi id=atext value="" placeholder="Enter watermark text" style="margin-bottom:4px;width:100%;font-size:13px">
+    <div style="font-size:10px;color:var(--error);margin-bottom:2px;letter-spacing:.3px;font-weight:500">PASSWORD (optional, encrypts watermark)</div>
+    <input class=wi id=apwd value="" type="password" placeholder="Enter password..." style="margin-bottom:8px;width:100%;font-size:12px">
+    <button class="tb" id=addBtn onclick=addFromDlg() style="margin-bottom:8px;width:100%;padding:7px;background:var(--primary);color:var(--on-primary);border-color:var(--primary);font-weight:500">+ ADD TO LIST</button>
+    <div id=adlgList style="flex:1;overflow-y:auto;min-height:60px;max-height:50vh;font-size:11px;color:var(--body);border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline);padding:4px 0;margin:4px 0"></div>
+    <button class="tb a" onclick=closeAddDlg() style="margin-top:6px;width:100%;padding:8px;border-color:var(--primary);color:var(--primary);font-weight:500">DONE</button>
+  </div>
+</div>
+
+<select id=wmt style=display:none><option value=freq>freq</option></select>
+<input id=wt style=display:none>
 <script src="app.js"></script>
-
-
-
-
-
-<div id=wmModal style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center">
-<div style="background:var(--b1);border:1px solid var(--d);padding:16px;width:380px;max-height:85vh;display:flex;flex-direction:column">
-<div style=display:flex;justify-content:space-between;align-items:center;margin-bottom:10px>
-  <span style=font-size:13px;letter-spacing:.1em;color:var(--f0);text-transform:uppercase>ADD WATERMARK <span id=adlgCount style=color:var(--r);font-size:11px>0</span></span>
-  <button class="tb sm" onclick=closeAddDlg() style=font-size:14px;padding:0 8px>x</button>
-</div>
-<select class=sl id=amt style="margin-bottom:4px" onchange=updateTypeDesc()><option value=freq>Freq - Robust, small capacity</option><option value=lsb>LSB - Fragile, huge capacity</option><option value=visible>Visible - Text overlay</option><option value=patchwork>Patchwork - JPEG resistant</option><option value=svd>SVD - Singular value robust</option><option value=spread>Spread - Most robust</option><option value=dct_block>DCT Block - JPEG robust</option><option value=reversible>Reversible - Lossless</option></select>
-<div id=typeDesc style="font-size:9px;color:var(--f1);margin-bottom:6px;min-height:14px">Recommended for secret data that survives compression</div>
-<input class=wi id=atext value="" placeholder="Enter watermark text" style="margin-bottom:4px;width:100%;padding:8px;background:var(--b2);border:1px solid var(--d);color:var(--f0);font-family:inherit;font-size:12px;outline:none">
-<div style=font-size:9px;color:var(--r);margin-bottom:2px;letter-spacing:.05em>PASSWORD (optional, encrypts watermark)</div>
-<input class=wi id=apwd value="" type="password" placeholder="Enter password..." style="margin-bottom:6px;width:100%;padding:6px 8px;background:var(--b2);border:1px solid var(--d);color:var(--f0);font-family:inherit;font-size:11px;outline:none">
-<button class="tb" id=addBtn onclick=addFromDlg() style=margin-bottom:6px;width:100%;padding:6px>+ ADD TO LIST</button>
-<div id=adlgList style="flex:1;overflow-y:auto;min-height:60px;max-height:50vh;font-size:11px;color:var(--f1);border-top:1px solid var(--d);border-bottom:1px solid var(--d);padding:4px 0"></div>
-<button class="tb a" onclick=closeAddDlg() style=margin-top:6px;width:100%;padding:8px>DONE</button>
-</div>
-</div></html>
+</body>
+</html>
