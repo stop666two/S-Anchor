@@ -3,6 +3,9 @@ import struct
 import numpy as np
 from PIL import Image
 
+from ..bch_codec import CODE_LEN, DATA_LEN
+from ..bch_codec import decode as bch_decode
+from ..bch_codec import encode as bch_encode
 from . import BaseWatermark, register
 
 
@@ -25,7 +28,11 @@ class SvdWatermark(BaseWatermark):
 
         length_bytes = struct.pack('>H', len(payload))
         data = length_bytes + payload
-        bits = np.unpackbits(np.frombuffer(data, dtype=np.uint8))
+        raw_bits = np.unpackbits(np.frombuffer(data, dtype=np.uint8))
+        n_bch = max(1, (len(raw_bits) + DATA_LEN - 1) // DATA_LEN)
+        raw_bits = np.pad(raw_bits, (0, n_bch * DATA_LEN - len(raw_bits)), 'constant')
+        chunks = [bch_encode(raw_bits[i * DATA_LEN:(i + 1) * DATA_LEN]) for i in range(n_bch)]
+        bits = np.concatenate(chunks)
 
         h, w = arr.shape
         h_blocks = h // block_size
@@ -62,7 +69,7 @@ class SvdWatermark(BaseWatermark):
         h_blocks = h // block_size
         w_blocks = w // block_size
 
-        bits = []
+        all_bits = []
         for by in range(h_blocks):
             for bx in range(w_blocks):
                 y1, y2 = by * block_size, (by + 1) * block_size
@@ -70,19 +77,26 @@ class SvdWatermark(BaseWatermark):
                 block = arr[y1:y2, x1:x2]
                 _, s, _ = np.linalg.svd(block, full_matrices=False)
                 q = int(round(s[0] / strength))
-                bits.append(q % 2)
+                all_bits.append(q % 2)
 
-                if len(bits) >= 16:
-                    header_bits = np.array(bits[:16], dtype=np.uint8)
-                    data_len = struct.unpack('>H', np.packbits(header_bits).tobytes())[0]
-                    if data_len < 1 or data_len > 4096:
-                        return b'', {'bits_extracted': 0}
-                    n_needed = 16 + data_len * 8
-                    if len(bits) >= n_needed:
-                        payload_bits = np.array(bits[16:n_needed], dtype=np.uint8)
-                        payload = np.packbits(payload_bits).tobytes()
-                        return payload, {'bits_extracted': len(payload_bits)}
+        raw = np.array(all_bits, dtype=np.uint8)
+        n_chunks = len(raw) // CODE_LEN
+        if n_chunks == 0:
+            return b'', {'bits_extracted': 0}
+        parts = [bch_decode(raw[i * CODE_LEN:(i + 1) * CODE_LEN]) for i in range(n_chunks)]
+        decoded = np.concatenate(parts) if parts else raw
 
+        if len(decoded) < 16:
+            return b'', {'bits_extracted': 0}
+        header_bits = decoded[:16]
+        data_len = struct.unpack('>H', np.packbits(header_bits.astype(np.uint8)).tobytes())[0]
+        if data_len < 1 or data_len > 4096:
+            return b'', {'bits_extracted': 0}
+        n_needed = 16 + data_len * 8
+        if len(decoded) >= n_needed:
+            payload_bits = decoded[16:n_needed]
+            payload = np.packbits(payload_bits.astype(np.uint8)).tobytes()
+            return payload, {'bits_extracted': len(payload_bits)}
         return b'', {'bits_extracted': 0}
 
 
