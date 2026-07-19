@@ -12,6 +12,7 @@ def _image(size=(256, 256)):
 TYPE_PARAMS = [
     ('freq', {'alpha': 0.15, 'delta': 40, 'level': 1, 'sync': True, 'bch': True}),
     ('dft', {'strength': 50}),
+    ('dwtsvd', {'strength': 30}),
     ('dct_block', {'strength': 30}),
     ('svd', {'strength': 40}),
     ('spread', {'strength': 30, 'spread_factor': 64, 'seed': 42}),
@@ -25,7 +26,7 @@ TYPE_PARAMS = [
 def test_list_types_includes_all():
     types = list_types()
     type_ids = {t['type_id'] for t in types}
-    expected = {'freq', 'dft', 'dct_block', 'svd', 'spread', 'patchwork', 'lsb', 'reversible', 'visible'}
+    expected = {'freq', 'dft', 'dwtsvd', 'dct_block', 'svd', 'spread', 'patchwork', 'lsb', 'reversible', 'visible'}
     missing = expected - type_ids
     assert not missing, f'Missing types: {missing}'
 
@@ -35,8 +36,8 @@ def test_embed_extract_roundtrip(type_id, params):
     wm = get(type_id)
     assert wm is not None, f'{type_id} not registered'
     img = _image((128, 128))
-    data = b'T' * (2 if type_id == 'freq' else 4)
-    img_use = _image((256, 256)) if type_id == 'freq' else img
+    data = b'T' * (2 if type_id in ('freq',) else 4)
+    img_use = _image((256, 256)) if type_id in ('freq', 'dwtsvd') else img
     result, meta = wm.embed(img_use, data, params)
     assert result.size == img_use.size
     if type_id == 'visible':

@@ -52,7 +52,7 @@
         <div id=wi></div>
         <button class="tb sm" onclick=openAddDlg() style=margin-bottom:4px title="Add new watermark">＋ ADD</button>
         <div style=display:flex;gap:4px;margin-bottom:2px;flex-wrap:wrap;align-items:center>
-          <select class=sl id=wmf style="font-size:10px;flex:1;min-width:80px" onchange=applyFilter() title="Filter by type"><option value=>ALL</option><option value=freq>Freq</option><option value=dft>DFT</option><option value=lsb>LSB</option><option value=visible>Visible</option><option value=patchwork>Patch</option><option value=svd>SVD</option><option value=spread>Spread</option><option value=dct_block>DCT Block</option><option value=reversible>Rev</option></select>
+          <select class=sl id=wmf style="font-size:10px;flex:1;min-width:80px" onchange=applyFilter() title="Filter by type"><option value=>ALL</option><option value=freq>Freq</option><option value=dft>DFT</option><option value=dwtsvd>DWT-SVD</option><option value=lsb>LSB</option><option value=visible>Visible</option><option value=patchwork>Patch</option><option value=svd>SVD</option><option value=spread>Spread</option><option value=dct_block>DCT Block</option><option value=reversible>Rev</option></select>
           <span style=font-size:11px;color:var(--muted);letter-spacing:.3px>|</span>
           <button class="tb sm" onclick=wmUp() title="Move selected up">▲</button>
           <button class="tb sm" onclick=wmDown() title="Move selected down">▼</button>
@@ -89,7 +89,10 @@
         <div class=sr><input type=range id=ro min=1 max=100 value=85><span class=v id=vo>85%</span></div>
       </div>
 
-      <div class=sp>── FREQ ALGORITHM ──</div>
+      <div style=display:flex;gap:4px;justify-content:space-between;align-items:center;padding:2px 0>
+        <span class=sp style=flex:1>── FREQ ALGORITHM ──</span>
+        <button class="tb sm" onclick=resetParams() title="Reset all parameters to defaults" style=flex-shrink:0;color:var(--muted-soft)>↺ RESET</button>
+      </div>
 
       <div class=pg>
         <div class=l data-i=al>ALPHA</div>
@@ -158,6 +161,7 @@
     <select class=sl id=amt style="margin-bottom:4px" onchange=updateTypeDesc()>
       <option value=freq>Freq - Robust, small capacity</option>
       <option value=dft>DFT - Geometric attack resistant</option>
+      <option value=dwtsvd>DWT-SVD - Hybrid robust</option>
       <option value=lsb>LSB - Fragile, huge capacity</option>
       <option value=visible>Visible - Text overlay</option>
       <option value=patchwork>Patchwork - JPEG resistant</option>

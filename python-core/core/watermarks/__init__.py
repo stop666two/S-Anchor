@@ -67,4 +67,4 @@ def sorted_for_extract() -> list[BaseWatermark]:
     return sorted(_registry.values(), key=lambda x: x.extract_order())
 
 
-from . import dct_block, dft, freq, lsb, patchwork, reversible, spread, svd, visible  # noqa: F401, E402
+from . import dct_block, dft, dwtsvd, freq, lsb, patchwork, reversible, spread, svd, visible  # noqa: F401, E402
