@@ -1,4 +1,5 @@
 var st={cd:null,rd:null,al:0.05,de:36,lv:2,sy:1,bc:1,bs:0},wm=[],wid=0,sel=-1,dr=0,lb=null,_editId=-1;
+try{var saved=sessionStorage.getItem('wm');if(saved){var parsed=JSON.parse(saved);wm=parsed.wm||[];wid=parsed.wid||0}}catch(e){}
 var LN={zh:{},en:{},ru:{}};
 LN.zh={on:'在线',em:'嵌入',ex:'提取',ca:'载体',pv:'预览',pm:'参数',wt:'水印',dl:'删除',ad:'添加',ct:'内容',rt:'旋转',sz:'字号',op:'透明度',al:'阿尔法',de:'德尔塔',lv:'层级',sy:'同步',bh:'BCH',exe:'执行',cp:'对比',ps:'PSNR',ss:'SSIM',bi:'比特',st:'状态',aw:'等待',dn:'完成',er:'错误',bu:'运行中',id:'就绪',lg:'日志',no:'无文件',nc:'无载体',eml:'嵌入:',ext:'提取:',in:'初始化',wa:'等待输入',sf:'找到',sn:'未找到',sc:'下载',xc:'执行',_ph:{wet:'编辑水印文字',expwd:'输入加密密码',atext:'水印文字',apwd:'密码(可选)'}};
 LN.en={on:'ONLINE',em:'EMBED',ex:'EXTRACT',ca:'CARRIER',pv:'PREVIEW',pm:'PARAMETERS',wt:'WATERMARK',dl:'DEL',ad:'+ADD',ct:'CONTENT',rt:'ROTATE',sz:'SIZE',op:'OPACITY',al:'ALPHA',de:'DELTA',lv:'LEVEL',sy:'SYNC',bh:'BCH',exe:'EXECUTE',cp:'COMPARISON',ps:'PSNR',ss:'SSIM',bi:'BITS',st:'STATUS',aw:'AWAITING',dn:'DONE',er:'ERROR',bu:'BUSY',id:'IDLE',lg:'LOG',no:'No file',nc:'NO CARRIER',eml:'Embed:',ext:'Extract:',in:'Ready',wa:'Waiting...',sf:'FOUND',sn:'NOT FOUND',sc:'DOWNLOAD',xc:'>>> EXECUTE <<<',_ph:{wet:'Edit selected watermark text',expwd:'Password for decryption',atext:'Watermark text',apwd:'Password (optional)'}};
@@ -15,6 +16,7 @@ function sl(l){if(!LN[l])return;cl=l;al();document.querySelectorAll('.l').forEac
 (function(){var s;try{s=localStorage.getItem('sl')}catch(e){console.warn('localStorage read failed:',e)}var n=navigator.language||'';sl(s||(n[0]+n[1]==='zh'?'zh':n[0]+n[1]==='ru'?'ru':'en'))})();
 
 function _reset(){st.bs=0;$('sd').className='dot g';sf('mst',tk('id'));$('mst').style.color='var(--success)';document.querySelectorAll('.bx').forEach(function(b){b.disabled=0})}
+function saveWm(){try{sessionStorage.setItem('wm',JSON.stringify({wm:wm,wid:wid}))}catch(e){}}
 
 var typeHints={'freq':'Robust frequency-domain, survives compression & cropping. ~10 bytes capacity.','lsb':'Fragile but huge capacity. Damaged by compression/resize.','visible':'Visible text overlay with configurable opacity & position.','patchwork':'Statistical method resistant to JPEG compression. ~8 bytes capacity.','svd':'SVD singular value modulation. Robust against common attacks.','spread':'Most robust type - resists almost all attacks. ~2 bytes capacity.','dct_block':'JPEG-robust DCT mid-band modulation.','reversible':'Lossless reversible watermark. Original can be fully restored.','dft':'DFT magnitude modulation. Robust to geometric attacks.'};
 var encryptOk={'lsb':1,'svd':1,'dct_block':1,'reversible':1};
