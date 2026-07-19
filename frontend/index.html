@@ -15,11 +15,11 @@
   <button class="b a" onclick=m(0) data-i=em>EMBED</button>
   <button class=b onclick=m(1) data-i=ex>EXTRACT</button>
   <span class=sr>
-    <span style=font-size:11px;color:var(--muted-soft)>PID:</span>
-    <span id=pd style=font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)></span>
-    <button class=l onclick=sl('zh')>ZH</button>
-    <button class="l a" onclick=sl('en')>EN</button>
-    <button class=l onclick=sl('ru')>RU</button>
+    <span id=pd style=font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted-soft)></span>
+    <span style=font-size:11px;color:var(--hairline)>|</span>
+    <button class=l onclick=sl('zh') title="中文">ZH</button>
+    <button class="l a" onclick=sl('en') title="English">EN</button>
+    <button class=l onclick=sl('ru') title="Русский">RU</button>
   </span>
 </div>
 
@@ -50,17 +50,19 @@
           <select class=sl id=ws onchange=ws() style=margin-bottom:0><option value=-1>--</option></select>
         </div>
         <div id=wi></div>
-        <button class="tb sm" onclick=openAddDlg() style=margin-bottom:4px>+ ADD</button>
-        <div style=display:flex;gap:4px;margin-bottom:2px;flex-wrap:wrap>
-          <select class=sl id=wmf style="font-size:10px;flex:1;min-width:80px" onchange=applyFilter()><option value=>ALL</option><option value=freq>Freq</option><option value=dft>DFT</option><option value=lsb>LSB</option><option value=visible>Visible</option><option value=patchwork>Patch</option><option value=svd>SVD</option><option value=spread>Spread</option><option value=dct_block>DCT Block</option><option value=reversible>Rev</option></select>
-          <button class="tb sm" onclick=wd() data-i=dl>DEL</button>
-          <button class="tb sm" onclick=clearAll() style=color:var(--error)>x</button>
-          <button class="tb sm" onclick=wmUp() style=font-size:10px;padding:2px 6px>▲</button>
-          <button class="tb sm" onclick=wmDown() style=font-size:10px;padding:2px 6px>▼</button>
-          <button class="tb sm" onclick=selectAll() style=font-size:9px;padding:2px 6px>[X]</button>
-          <button class="tb sm" onclick=batchExport() style=font-size:9px;padding:2px 4px>EX*</button>
-          <button class="tb sm" onclick=exportCfg() style=font-size:9px;padding:2px 4px>EX1</button>
-          <button class="tb sm" onclick=importCfg() style=font-size:9px;padding:2px 4px>IM</button>
+        <button class="tb sm" onclick=openAddDlg() style=margin-bottom:4px title="Add new watermark">＋ ADD</button>
+        <div style=display:flex;gap:4px;margin-bottom:2px;flex-wrap:wrap;align-items:center>
+          <select class=sl id=wmf style="font-size:10px;flex:1;min-width:80px" onchange=applyFilter() title="Filter by type"><option value=>ALL</option><option value=freq>Freq</option><option value=dft>DFT</option><option value=lsb>LSB</option><option value=visible>Visible</option><option value=patchwork>Patch</option><option value=svd>SVD</option><option value=spread>Spread</option><option value=dct_block>DCT Block</option><option value=reversible>Rev</option></select>
+          <span style=font-size:11px;color:var(--muted);letter-spacing:.3px>|</span>
+          <button class="tb sm" onclick=wmUp() title="Move selected up">▲</button>
+          <button class="tb sm" onclick=wmDown() title="Move selected down">▼</button>
+          <span style=font-size:11px;color:var(--muted);letter-spacing:.3px>|</span>
+          <button class="tb sm" onclick=wd() data-i=dl title="Delete selected">✕ DEL</button>
+          <button class="tb sm" onclick=clearAll() title="Delete ALL watermarks" style=color:var(--error)>✕ ALL</button>
+          <span style=font-size:11px;color:var(--muted);letter-spacing:.3px>|</span>
+          <button class="tb sm" onclick=importCfg() title="Load watermarks from JSON file">LOAD</button>
+          <button class="tb sm" onclick=exportCfg() title="Save current watermarks to JSON">SAVE</button>
+          <button class="tb sm" onclick=batchExport() title="Save ALL to separate JSON">SAVE ALL</button>
           <input type=file id=cfgFile accept=".json" style=display:none onchange=loadCfg(this)>
         </div>
         <input class=wi id=wet value="" placeholder="Edit selected watermark text" style="width:100%;font-size:12px">
@@ -87,7 +89,7 @@
         <div class=sr><input type=range id=ro min=1 max=100 value=85><span class=v id=vo>85%</span></div>
       </div>
 
-      <div class=sp>DWT-DCT-SVD</div>
+      <div class=sp>── FREQ ALGORITHM ──</div>
 
       <div class=pg>
         <div class=l data-i=al>ALPHA</div>
@@ -106,17 +108,17 @@
         <div id=cpd style="font-size:10px;color:var(--muted);letter-spacing:.3px;padding:2px 0">MAX: -- bytes | USED: -- bytes</div>
       </div>
 
-      <button class=bx id=be data-i=xc data-i=xc>>> EXECUTE <<<</button>
+      <button class=bx id=be title="Embed watermarks into image">⟫ EMBED ⟪</button>
     </div>
 
     <div class=pt id=xr style=display:none>
       <div class=ph>EXTRACT</div>
-      <div style="font-size:10px;color:var(--error);padding:2px 0;letter-spacing:.5px;text-transform:uppercase;font-weight:500">Password (if any)</div>
+      <div style="font-size:10px;color:var(--error);padding:2px 0;letter-spacing:.5px;text-transform:uppercase;font-weight:500">Password (if encrypted)</div>
       <input class=wi id=expwd value="" type="password" placeholder="Enter password used during embedding" style="margin:2px 0 6px;width:100%;font-size:12px">
       <div id=xl style="flex:1;overflow-y:auto;padding:8px;background:var(--surface-soft);border-radius:8px;font-size:12px;color:var(--muted);border:1px solid var(--hairline);min-height:80px">
         <span style=color:var(--success)>Click EXTRACT to detect watermarks</span>
       </div>
-      <button class=bx id=be2 data-i=xc data-i=xc>>> EXTRACT <<<</button>
+      <button class=bx id=be2 title="Extract watermarks from image">⟫ EXTRACT ⟪</button>
     </div>
   </div>
 </div>
