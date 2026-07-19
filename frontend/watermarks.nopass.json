@@ -1,10 +1,13 @@
 {
   "version": 1,
   "watermarks": [
-    {"type":"freq","text":"STOP-1-FR","alpha":0.20,"delta":50,"level":1,"sync":true,"bch":true},
-    {"type":"svd","text":"STOP-2-SVD","strength":50},
-    {"type":"spread","text":"STOP-3-SP","strength":25,"spread_factor":128,"seed":42},
-    {"type":"lsb","text":"STOP-4-LSB"},
-    {"type":"visible","text":"STOP-5-VIS","x":50,"y":50,"font_size":48,"opacity":0.3}
+    {"type":"freq","text":"S-ANCHOR-FREQ","alpha":0.15,"delta":40,"level":2,"sync":true,"bch":true},
+    {"type":"svd","text":"S-ANCHOR-SVD","strength":30},
+    {"type":"spread","text":"S-ANCHOR-SPREAD","strength":25,"spread_factor":64,"seed":42},
+    {"type":"patchwork","text":"S-ANCHOR-PATCH","strength":20,"seed":7},
+    {"type":"lsb","text":"S-ANCHOR-LSB-this-is-a-long-message-that-can-be-very-large-with-lsb"},
+    {"type":"dct_block","text":"S-ANCHOR-DCT","strength":18},
+    {"type":"reversible","text":"S-ANCHOR-REV"},
+    {"type":"visible","text":"S-ANCHOR","x":50,"y":50,"font_size":48,"opacity":0.25,"rotation":0}
   ]
 }
