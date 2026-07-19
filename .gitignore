@@ -1,12 +1,17 @@
+# ============================================
 # AI 规则文件 - 禁止提交版本控制
+# ============================================
 AGENTS.md
 AGENTS.txt
 AGENT.md
 AGENT.txt
 agent-readme.md
 RULES.md
+RULES.txt
 
+# ============================================
 # Python
+# ============================================
 __pycache__/
 *.py[cod]
 *.pyo
@@ -16,32 +21,101 @@ build/
 .eggs/
 .pytest_cache/
 .ruff_cache/
+*.pyc
+*.pyc.un~  # vim backup
 
+# ============================================
 # Go
+# ============================================
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
 
-# IDE
+# ============================================
+# 操作系统 / OS files
+# ============================================
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS
+.DS_Store
+.DS_Store?
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# Linux
+*~
+
+# ============================================
+# IDE / Editor
+# ============================================
 .idea/
 .vscode/
 *.swp
 *.swo
+*.swn
+*.swn
+*.bak
+*.orig
+*.tmp
+.history/
+.settings/
+.project
+.classpath
+*.sublime-*
 
-# Temp
-_analysis/
-*.pyc
+# ============================================
+# 环境 / Environments
+# ============================================
+.env
+.env.*
+!.env.example
+venv/
+.venv/
+env/
 
-# Original subproject archives
+# ============================================
+# 依赖 / Dependencies
+# ============================================
+node_modules/
+package-lock.json
+
+# (与 Go 段合并，不再重复)
+
+# ============================================
+# 项目特定 / Project specific
+# ============================================
+# 子项目源码引用（只存参考，不纳入版本控制）
 subprojects/
 *.zip
 *.rar
 *.7z
+*.tar.gz
+*.tgz
 
-# Tech chain doc (no longer needed in repo)
+# 技术链文档
 技术链文档.md
 
-# Custom githooks directory (tracked via .githooks/)
+# 自定义 githooks（通过 .githooks/ 追踪）
 .husky/
+
+# 临时分析目录
+_analysis/
+
+# 设计文档（设计稿不提交，只提交最终的 UI_DESIGN.md）
+DESIGN-claude.md
+
+# 日志文件
+*.log
