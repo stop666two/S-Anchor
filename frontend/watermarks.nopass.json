@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "watermarks": [
+    {"type":"freq","text":"STOP-1-FR","alpha":0.20,"delta":50,"level":1,"sync":true,"bch":true},
+    {"type":"svd","text":"STOP-2-SVD","strength":50},
+    {"type":"spread","text":"STOP-3-SP","strength":25,"spread_factor":128,"seed":42},
+    {"type":"lsb","text":"STOP-4-LSB"},
+    {"type":"visible","text":"STOP-5-VIS","x":50,"y":50,"font_size":48,"opacity":0.3}
+  ]
+}
