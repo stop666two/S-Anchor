@@ -97,7 +97,9 @@ class FreqWatermark(BaseWatermark):
         if config.sync_enabled:
             offset, corr = correlate_sync(all_bits, sync)
             found = corr >= 0.5 and offset >= 0
-            payload = all_bits[offset + SYNC_LEN:] if found else all_bits
+            if not found:
+                return b'', corr, False
+            payload = all_bits[offset + SYNC_LEN:]
         else:
             payload = all_bits
             corr = 0.0
@@ -112,7 +114,6 @@ class FreqWatermark(BaseWatermark):
 
         max_bytes = min(len(payload) // 8, 64)
         raw = bits_to_bytes(payload[:max_bytes * 8])
-        # Strip null bytes and BCH padding artifacts
         null_pos = raw.find(b'\x00')
         if null_pos >= 0:
             raw = raw[:null_pos]

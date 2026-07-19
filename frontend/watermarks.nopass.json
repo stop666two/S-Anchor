@@ -1,7 +1,7 @@
 {
   "version": 1,
   "watermarks": [
-    {"type":"freq","text":"FR01","delta":40,"level":1,"sync":true,"bch":true},
+    {"type":"freq","text":"FR01","delta":60,"level":2,"sync":false,"bch":true},
     {"type":"dft","text":"DF02","strength":50},
     {"type":"dct_block","text":"DC03","strength":30},
     {"type":"svd","text":"SV04","strength":40},
