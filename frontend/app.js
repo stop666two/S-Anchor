@@ -338,7 +338,7 @@ function sf(i,v){var e=$(i);if(e&&v!==undefined)e.textContent=v;return e}
 
 
 
-function showExtract(parts){var cv=$('cv');cv.style.display='block';$('pn').style.display='none';cv.width=cv.offsetWidth;cv.height=cv.offsetHeight;if(!cv.width||!cv.height)return;var ctx=cv.getContext('2d');if(st.cd&&st.cd.el){var s=Math.min(cv.width/st.cd.w,cv.height/st.cd.h);var ox=(cv.width-st.cd.w*s)/2,oy=(cv.height-st.cd.h*s)/2;ctx.drawImage(st.cd.el,ox,oy,st.cd.w*s,st.cd.h*s)}var bh=38+18*parts.length;ctx.fillStyle='rgba(0,0,0,0.65)';ctx.fillRect(0,cv.height-bh,cv.width,bh);ctx.fillStyle='#4AF626';ctx.font='bold 14px JetBrains Mono';ctx.textAlign='left';ctx.textBaseline='top';var nFound=parts.filter(function(p){return p.ok}).length;ctx.fillText('>>> FOUND: '+nFound+'/'+parts.length,12,cv.height-bh+6);ctx.fillStyle='#fff';ctx.font='12px JetBrains Mono';var fi=0;parts.forEach(function(p,i){if(!p.ok)return;ctx.fillStyle='#fff';ctx.fillText('['+p.type+'] '+p.text,12,cv.height-bh+26+18*fi);fi++})}function m(md){st.m=md;document.querySelectorAll('.b').forEach(function(b,i){b.classList.toggle('a',i===md)});var pp=$('pp'),xr=$('xr'),rs=$('results');if(pp)pp.style.display=md===0?'':'none';if(xr)xr.style.display=md===0?'none':'';if(rs)rs.style.display=md===0?'none':'';if(md===0){if(st.cd)rw();$('cv').style.display='';$('pn').style.display='none';var rs=$('results');if(rs)rs.style.display='none'}else{$('cv').style.display='none';$('pn').style.display='none';var rs=$('results');if(rs)rs.style.display=''}lg(tk(md?'ex':'eml'))}
+function showExtract(parts){var cv=$('cv');cv.style.display='block';$('pn').style.display='none';cv.width=cv.offsetWidth;cv.height=cv.offsetHeight;if(!cv.width||!cv.height)return;var ctx=cv.getContext('2d');if(st.cd&&st.cd.el){var s=Math.min(cv.width/st.cd.w,cv.height/st.cd.h);var ox=(cv.width-st.cd.w*s)/2,oy=(cv.height-st.cd.h*s)/2;ctx.drawImage(st.cd.el,ox,oy,st.cd.w*s,st.cd.h*s)}var bh=28+16*parts.length;ctx.fillStyle='rgba(24,23,21,0.85)';ctx.fillRect(0,cv.height-bh,cv.width,bh);ctx.fillStyle='#cc785c';ctx.font='bold 11px Inter,sans-serif';ctx.textAlign='left';ctx.textBaseline='top';var nFound=parts.filter(function(p){return p.ok}).length;ctx.fillText('FOUND '+nFound+'/'+parts.length,10,cv.height-bh+6);ctx.fillStyle='#faf9f5';ctx.font='11px JetBrains Mono,monospace';var fi=0;parts.forEach(function(p,i){if(!p.ok)return;ctx.fillStyle='#cc785c';ctx.font='bold 10px Inter,sans-serif';ctx.fillText('['+p.type+']',10,cv.height-bh+22+14*fi);ctx.fillStyle='#faf9f5';var tw=ctx.measureText('['+p.type+']').width;ctx.font='11px JetBrains Mono,monospace';ctx.fillText(p.text,14+tw,cv.height-bh+22+14*fi);fi++})}function m(md){st.m=md;document.querySelectorAll('.b').forEach(function(b,i){b.classList.toggle('a',i===md)});var pp=$('pp'),xr=$('xr'),rs=$('results');if(pp)pp.style.display=md===0?'':'none';if(xr)xr.style.display=md===0?'none':'';if(rs)rs.style.display=md===0?'none':'';if(md===0){if(st.cd)rw();$('cv').style.display='';$('pn').style.display='none';var rs=$('results');if(rs)rs.style.display='none'}else{$('cv').style.display='none';$('pn').style.display='none';var rs=$('results');if(rs)rs.style.display=''}lg(tk(md?'ex':'eml'))}
 
 
 
@@ -1851,16 +1851,16 @@ if(xl){
 
 
   var found=parts.filter(function(p){return p.ok});
-  xl.innerHTML='<div style=font-size:10px;color:var(--f1);padding:4px 0;border-bottom:1px solid var(--d)>FOUND '+found.length+'/'+parts.length+'</div>';
+  xl.innerHTML='<div style="font-size:10px;font-weight:500;color:var(--muted);padding:4px 0;border-bottom:1px solid var(--hairline);letter-spacing:.5px">FOUND '+found.length+'/'+parts.length+'</div>';
   found.forEach(function(p){
     var d2=document.createElement('div');
-    d2.style.cssText='border-bottom:1px solid var(--d);padding:6px 4px';
-    var n=document.createElement('div');
-    n.style.cssText='color:var(--g);font-size:10px;text-transform:uppercase';
+    d2.style.cssText='display:flex;align-items:baseline;gap:6px;border-bottom:1px solid var(--hairline);padding:5px 4px';
+    var n=document.createElement('span');
+    n.style.cssText='color:var(--primary);font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap';
     n.textContent='['+p.type+']';
     d2.appendChild(n);
-    var t=document.createElement('div');
-    t.style.cssText='color:var(--f0);font-size:12px;word-break:break-all';
+    var t=document.createElement('span');
+    t.style.cssText='color:var(--body);font-size:12px;word-break:break-all;line-height:1.4';
     t.textContent=p.text;
     d2.appendChild(t);
     xl.appendChild(d2);
