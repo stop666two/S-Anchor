@@ -1,13 +1,13 @@
 {
   "version": 1,
   "watermarks": [
-    {"type":"freq","text":"S-ANCHOR-FREQ","alpha":0.15,"delta":40,"level":2,"sync":true,"bch":true},
-    {"type":"svd","text":"S-ANCHOR-SVD","strength":30},
-    {"type":"spread","text":"S-ANCHOR-SPREAD","strength":25,"spread_factor":64,"seed":42},
-    {"type":"patchwork","text":"S-ANCHOR-PATCH","strength":20,"seed":7},
-    {"type":"lsb","text":"S-ANCHOR-LSB-this-is-a-long-message-that-can-be-very-large-with-lsb"},
-    {"type":"dct_block","text":"S-ANCHOR-DCT","strength":18},
-    {"type":"reversible","text":"S-ANCHOR-REV"},
+    {"type":"freq","text":"FR01","alpha":0.15,"delta":40,"level":1,"sync":false,"bch":false},
+    {"type":"dct_block","text":"DCT02","strength":18},
+    {"type":"svd","text":"SVD03","strength":30},
+    {"type":"spread","text":"SPRD04","strength":25,"spread_factor":64,"seed":42},
+    {"type":"patchwork","text":"PAT05","strength":20,"seed":7},
+    {"type":"reversible","text":"REV06"},
+    {"type":"lsb","text":"LSB07-this-message-can-be-very-long-because-lsb-has-huge-capacity"},
     {"type":"visible","text":"S-ANCHOR","x":50,"y":50,"font_size":48,"opacity":0.25,"rotation":0}
   ]
 }
