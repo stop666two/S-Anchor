@@ -52,9 +52,11 @@
         <div id=wi></div>
         <button class="tb sm" onclick=openAddDlg() style=margin-bottom:4px>+ ADD</button>
         <div style=display:flex;gap:4px;margin-bottom:2px;flex-wrap:wrap>
-          <select class=sl id=wmf style="font-size:10px;flex:1;min-width:80px" onchange=applyFilter()><option value=>ALL</option><option value=freq>Freq</option><option value=lsb>LSB</option><option value=visible>Visible</option><option value=patchwork>Patch</option><option value=svd>SVD</option><option value=spread>Spread</option><option value=dct_block>DCT Block</option><option value=reversible>Rev</option></select>
+          <select class=sl id=wmf style="font-size:10px;flex:1;min-width:80px" onchange=applyFilter()><option value=>ALL</option><option value=freq>Freq</option><option value=dft>DFT</option><option value=lsb>LSB</option><option value=visible>Visible</option><option value=patchwork>Patch</option><option value=svd>SVD</option><option value=spread>Spread</option><option value=dct_block>DCT Block</option><option value=reversible>Rev</option></select>
           <button class="tb sm" onclick=wd() data-i=dl>DEL</button>
           <button class="tb sm" onclick=clearAll() style=color:var(--error)>x</button>
+          <button class="tb sm" onclick=wmUp() style=font-size:10px;padding:2px 6px>▲</button>
+          <button class="tb sm" onclick=wmDown() style=font-size:10px;padding:2px 6px>▼</button>
           <button class="tb sm" onclick=exportCfg() style=font-size:9px;padding:2px 6px>EX</button>
           <button class="tb sm" onclick=importCfg() style=font-size:9px;padding:2px 6px>IM</button>
           <input type=file id=cfgFile accept=".json" style=display:none onchange=loadCfg(this)>
@@ -151,6 +153,7 @@
     </div>
     <select class=sl id=amt style="margin-bottom:4px" onchange=updateTypeDesc()>
       <option value=freq>Freq - Robust, small capacity</option>
+      <option value=dft>DFT - Geometric attack resistant</option>
       <option value=lsb>LSB - Fragile, huge capacity</option>
       <option value=visible>Visible - Text overlay</option>
       <option value=patchwork>Patchwork - JPEG resistant</option>
@@ -171,6 +174,8 @@
 
 <select id=wmt style=display:none><option value=freq>freq</option></select>
 <input id=wt style=display:none>
-<script src="app.js"></script>
+<script src="state.js"></script>
+<script src="ui.js"></script>
+<script src="embed-extract.js"></script>
 </body>
 </html>

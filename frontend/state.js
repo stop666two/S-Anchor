@@ -1,0 +1,20 @@
+var st={cd:null,rd:null,al:0.05,de:36,lv:2,sy:1,bc:1,bs:0},wm=[],wid=0,sel=-1,dr=0,lb=null,_editId=-1;
+var LN={zh:{},en:{},ru:{}};
+LN.zh={on:'在线',em:'嵌入',ex:'提取',ca:'载体',pv:'预览',pm:'参数',wt:'水印',dl:'删除',ad:'添加',ct:'内容',rt:'旋转',sz:'字号',op:'透明度',al:'阿尔法',de:'德尔塔',lv:'层级',sy:'同步',bh:'BCH',exe:'执行',cp:'对比',ps:'PSNR',ss:'SSIM',bi:'比特',st:'状态',aw:'等待',dn:'完成',er:'错误',bu:'运行中',id:'就绪',lg:'日志',no:'无文件',nc:'无载体',eml:'嵌入:',ext:'提取:',in:'初始化',wa:'等待输入',sf:'找到',sn:'未找到',sc:'下载',xc:'执行',_ph:{wet:'编辑水印文字',expwd:'输入加密密码',atext:'水印文字',apwd:'密码(可选)'}};
+LN.en={on:'ONLINE',em:'EMBED',ex:'EXTRACT',ca:'CARRIER',pv:'PREVIEW',pm:'PARAMETERS',wt:'WATERMARK',dl:'DEL',ad:'+ADD',ct:'CONTENT',rt:'ROTATE',sz:'SIZE',op:'OPACITY',al:'ALPHA',de:'DELTA',lv:'LEVEL',sy:'SYNC',bh:'BCH',exe:'EXECUTE',cp:'COMPARISON',ps:'PSNR',ss:'SSIM',bi:'BITS',st:'STATUS',aw:'AWAITING',dn:'DONE',er:'ERROR',bu:'BUSY',id:'IDLE',lg:'LOG',no:'No file',nc:'NO CARRIER',eml:'Embed:',ext:'Extract:',in:'Ready',wa:'Waiting...',sf:'FOUND',sn:'NOT FOUND',sc:'DOWNLOAD',xc:'>>> EXECUTE <<<',_ph:{wet:'Edit selected watermark text',expwd:'Password for decryption',atext:'Watermark text',apwd:'Password (optional)'}};
+LN.ru={on:'Работает',em:'Встр',ex:'Извл',ca:'Изобр',pv:'Пред',pm:'Парам',wt:'Знак',dl:'Удал',ad:'+Доб',ct:'Текст',rt:'Повор',sz:'Разм',op:'Проз',al:'Альф',de:'Дель',lv:'Уров',sy:'Синх',bh:'BCH',exe:'Выпол',cp:'Сравн',ps:'ПСНР',ss:'ССИМ',bi:'Бит',st:'Стат',aw:'Ожид',dn:'Готов',er:'Ошиб',bu:'Занят',id:'Ожид',lg:'Журн',no:'Нет',nc:'Нет',eml:'Встр:',ext:'Извл:',in:'Готов',wa:'Ожидан...',sf:'НАЙДЕН',sn:'НЕ НАЙД',sc:'СКАЧАТЬ',xc:'>>> Выполнить <<<',_ph:{wet:'Редакт.',expwd:'Пароль',atext:'Текст',apwd:'Пароль'}};
+var cl='en';
+
+function tk(k){var m=LN[cl];return(m&&m[k]!==undefined)?m[k]:(LN.en[k]||k)}
+function $(i){return document.getElementById(i)}
+function sf(i,v){var e=$(i);if(e&&v!==undefined)e.textContent=v;return e}
+function lg(m,t){t=t||'';if(!lb)lb=$('lb');var n=new Date();var ts='['+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0')+']';var l=document.createElement('div');l.className='l '+t;l.innerHTML='<span class=t>'+ts+'</span> '+m;lb.appendChild(l);lb.scrollTop=lb.scrollHeight}
+
+function al(){document.querySelectorAll('[data-i]').forEach(function(e){e.textContent=tk(e.dataset.i)});var ph={'wet':'Edit selected watermark text','expwd':'Enter password used during embedding','atext':'Enter watermark text','apwd':'Password (optional)'};var l=LN[cl];if(l&&l._ph){ph=l._ph}Object.keys(ph).forEach(function(k){var el=$(k);if(el)el.placeholder=ph[k]})}
+function sl(l){if(!LN[l])return;cl=l;al();document.querySelectorAll('.l').forEach(function(b){b.classList.toggle('a',b.dataset.l===l)});try{localStorage.setItem('sl',l)}catch(e){console.warn('localStorage write failed:',e)}}
+(function(){var s;try{s=localStorage.getItem('sl')}catch(e){console.warn('localStorage read failed:',e)}var n=navigator.language||'';sl(s||(n[0]+n[1]==='zh'?'zh':n[0]+n[1]==='ru'?'ru':'en'))})();
+
+function _reset(){st.bs=0;$('sd').className='dot g';sf('mst',tk('id'));$('mst').style.color='var(--success)';document.querySelectorAll('.bx').forEach(function(b){b.disabled=0})}
+
+var typeHints={'freq':'Robust frequency-domain, survives compression & cropping. ~10 bytes capacity.','lsb':'Fragile but huge capacity. Damaged by compression/resize.','visible':'Visible text overlay with configurable opacity & position.','patchwork':'Statistical method resistant to JPEG compression. ~8 bytes capacity.','svd':'SVD singular value modulation. Robust against common attacks.','spread':'Most robust type - resists almost all attacks. ~2 bytes capacity.','dct_block':'JPEG-robust DCT mid-band modulation.','reversible':'Lossless reversible watermark. Original can be fully restored.','dft':'DFT magnitude modulation. Robust to geometric attacks.'};
+var encryptOk={'lsb':1,'svd':1,'dct_block':1,'reversible':1};
